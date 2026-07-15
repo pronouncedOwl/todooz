@@ -1,0 +1,258 @@
+{
+  "templates": [
+    {
+      "id": "rec-drink-water",
+      "title": "Drink water",
+      "freq": "DAILY",
+      "interval": 1,
+      "times_per_day": 2,
+      "byweekday": null,
+      "anchor": null,
+      "notes": "Twice per day."
+    },
+    {
+      "id": "rec-journal",
+      "title": "Journal",
+      "freq": "DAILY",
+      "interval": 1,
+      "times_per_day": 1,
+      "byweekday": null,
+      "anchor": null,
+      "notes": ""
+    },
+    {
+      "id": "rec-kids-mail",
+      "title": "Leave mail in kids' mailboxes",
+      "freq": "WEEKLY",
+      "interval": 1,
+      "times_per_day": 1,
+      "byweekday": [
+        "TH"
+      ],
+      "anchor": null,
+      "notes": ""
+    },
+    {
+      "id": "rec-alan-watts",
+      "title": "Listen to an Alan Watts video",
+      "freq": "DAILY",
+      "interval": 2,
+      "times_per_day": 1,
+      "byweekday": null,
+      "anchor": "2026-07-15",
+      "notes": ""
+    },
+    {
+      "id": "rec-garage",
+      "title": "Organize the garage",
+      "freq": "DAILY",
+      "interval": 1,
+      "times_per_day": 1,
+      "byweekday": null,
+      "anchor": null,
+      "notes": ""
+    },
+    {
+      "id": "rec-pt",
+      "title": "PT (physical therapy)",
+      "freq": "DAILY",
+      "interval": 1,
+      "times_per_day": 1,
+      "byweekday": null,
+      "anchor": null,
+      "notes": ""
+    },
+    {
+      "id": "rec-toe-medicine",
+      "title": "Put medicine on toes",
+      "freq": "DAILY",
+      "interval": 1,
+      "times_per_day": 1,
+      "byweekday": null,
+      "anchor": null,
+      "notes": ""
+    },
+    {
+      "id": "rec-reach-friend",
+      "title": "Reach out to a friend",
+      "freq": "DAILY",
+      "interval": 2,
+      "times_per_day": 1,
+      "byweekday": null,
+      "anchor": "2026-06-30",
+      "notes": "Alternates with frisbee day."
+    },
+    {
+      "id": "rec-shower",
+      "title": "Shower",
+      "freq": "DAILY",
+      "interval": 1,
+      "times_per_day": 1,
+      "byweekday": null,
+      "anchor": null,
+      "notes": "Sub-items intentionally not tracked."
+    },
+    {
+      "id": "rec-stretch",
+      "title": "Stretch",
+      "freq": "DAILY",
+      "interval": 1,
+      "times_per_day": 1,
+      "byweekday": null,
+      "anchor": null,
+      "notes": ""
+    },
+    {
+      "id": "rec-supplements",
+      "title": "Take all supplements",
+      "freq": "DAILY",
+      "interval": 1,
+      "times_per_day": 1,
+      "byweekday": null,
+      "anchor": null,
+      "notes": ""
+    },
+    {
+      "id": "rec-vyvanse",
+      "title": "Take Vyvanse",
+      "freq": "DAILY",
+      "interval": 1,
+      "times_per_day": 1,
+      "byweekday": null,
+      "anchor": null,
+      "notes": "Before noon (12pm)."
+    },
+    {
+      "id": "rec-frisbee",
+      "title": "Throw frisbee for the dog",
+      "freq": "DAILY",
+      "interval": 2,
+      "times_per_day": 1,
+      "byweekday": null,
+      "anchor": "2026-07-01",
+      "notes": "Alternates with reach-out-to-a-friend."
+    },
+    {
+      "id": "rec-trim-hair",
+      "title": "Trim body hair & beard",
+      "freq": "WEEKLY",
+      "interval": 1,
+      "times_per_day": 1,
+      "byweekday": [
+        "TH"
+      ],
+      "anchor": null,
+      "notes": ""
+    },
+    {
+      "id": "rec-trim-nails",
+      "title": "Trim nails",
+      "freq": "WEEKLY",
+      "interval": 1,
+      "times_per_day": 1,
+      "byweekday": [
+        "TU"
+      ],
+      "anchor": null,
+      "notes": ""
+    }
+  ],
+  "instances": [
+    {
+      "id": "rec-drink-water_2026-07-15_1",
+      "template_id": "rec-drink-water",
+      "date": "2026-07-15",
+      "occurrence": 1,
+      "completed": false,
+      "status": "open"
+    },
+    {
+      "id": "rec-drink-water_2026-07-15_2",
+      "template_id": "rec-drink-water",
+      "date": "2026-07-15",
+      "occurrence": 2,
+      "completed": false,
+      "status": "open"
+    },
+    {
+      "id": "rec-journal_2026-07-15_1",
+      "template_id": "rec-journal",
+      "date": "2026-07-15",
+      "occurrence": 1,
+      "completed": false,
+      "status": "open"
+    },
+    {
+      "id": "rec-alan-watts_2026-07-15_1",
+      "template_id": "rec-alan-watts",
+      "date": "2026-07-15",
+      "occurrence": 1,
+      "completed": false,
+      "status": "open"
+    },
+    {
+      "id": "rec-garage_2026-07-15_1",
+      "template_id": "rec-garage",
+      "date": "2026-07-15",
+      "occurrence": 1,
+      "completed": false,
+      "status": "open"
+    },
+    {
+      "id": "rec-pt_2026-07-15_1",
+      "template_id": "rec-pt",
+      "date": "2026-07-15",
+      "occurrence": 1,
+      "completed": false,
+      "status": "open"
+    },
+    {
+      "id": "rec-toe-medicine_2026-07-15_1",
+      "template_id": "rec-toe-medicine",
+      "date": "2026-07-15",
+      "occurrence": 1,
+      "completed": false,
+      "status": "open"
+    },
+    {
+      "id": "rec-shower_2026-07-15_1",
+      "template_id": "rec-shower",
+      "date": "2026-07-15",
+      "occurrence": 1,
+      "completed": false,
+      "status": "open"
+    },
+    {
+      "id": "rec-stretch_2026-07-15_1",
+      "template_id": "rec-stretch",
+      "date": "2026-07-15",
+      "occurrence": 1,
+      "completed": false,
+      "status": "open"
+    },
+    {
+      "id": "rec-supplements_2026-07-15_1",
+      "template_id": "rec-supplements",
+      "date": "2026-07-15",
+      "occurrence": 1,
+      "completed": false,
+      "status": "open"
+    },
+    {
+      "id": "rec-vyvanse_2026-07-15_1",
+      "template_id": "rec-vyvanse",
+      "date": "2026-07-15",
+      "occurrence": 1,
+      "completed": false,
+      "status": "open"
+    },
+    {
+      "id": "rec-frisbee_2026-07-15_1",
+      "template_id": "rec-frisbee",
+      "date": "2026-07-15",
+      "occurrence": 1,
+      "completed": false,
+      "status": "open"
+    }
+  ]
+}

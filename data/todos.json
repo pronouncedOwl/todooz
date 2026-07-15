@@ -1,0 +1,416 @@
+[
+  {
+    "id": "task-001",
+    "title": "Get wife's car inspected",
+    "priority": "high",
+    "due_date": "2026-07-03",
+    "project": "Wife's car registration renewal",
+    "completed": true,
+    "notes": ""
+  },
+  {
+    "id": "task-002",
+    "title": "Katie's business — initial reporting draft",
+    "priority": "high",
+    "due_date": "2026-07-03",
+    "project": null,
+    "completed": true,
+    "notes": ""
+  },
+  {
+    "id": "task-003",
+    "title": "Schedule dentist appointment",
+    "priority": "high",
+    "due_date": "2026-07-16",
+    "project": null,
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-004",
+    "title": "Book + attend Dr. Yadiv appointment",
+    "priority": "high",
+    "due_date": "2026-07-06",
+    "project": "Back surgery prep (Dr. Yadiv)",
+    "completed": true,
+    "notes": ""
+  },
+  {
+    "id": "task-005",
+    "title": "Renew wife's registration online",
+    "priority": "high",
+    "due_date": "2026-07-16",
+    "project": "Wife's car registration renewal",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-006",
+    "title": "Get exact surgery details from surgeon",
+    "priority": "high",
+    "due_date": "2026-07-16",
+    "project": null,
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-007",
+    "title": "Get FMLA form requirements from work",
+    "priority": "high",
+    "due_date": null,
+    "project": "Back surgery prep (Dr. Yadiv)",
+    "completed": true,
+    "notes": ""
+  },
+  {
+    "id": "task-008",
+    "title": "Inspect bolts & check for special tools",
+    "priority": "low",
+    "due_date": null,
+    "project": "Fix backyard swing set",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-047",
+    "title": "Home Depot run for materials",
+    "priority": "low",
+    "due_date": null,
+    "project": "Fix backyard swing set",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-048",
+    "title": "Build/repair the swing set",
+    "priority": "low",
+    "due_date": null,
+    "project": "Fix backyard swing set",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-009",
+    "title": "Finish power-washing the driveway",
+    "priority": "medium",
+    "due_date": "2026-07-11",
+    "project": null,
+    "completed": true,
+    "notes": ""
+  },
+  {
+    "id": "task-012",
+    "title": "Replace metal cut-off saw blade (buy + install)",
+    "priority": "medium",
+    "due_date": "2026-08-01",
+    "project": null,
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-013",
+    "title": "Create a scavenger hunt for the kids",
+    "priority": "medium",
+    "due_date": "2026-08-14",
+    "project": null,
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-014",
+    "title": "Replace table-saw blade (buy + install)",
+    "priority": "medium",
+    "due_date": "2026-08-28",
+    "project": null,
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-015",
+    "title": "Assess AI tools & make a cost-reduction plan",
+    "priority": "medium",
+    "due_date": null,
+    "project": null,
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-016",
+    "title": "Assess Katie's current websites",
+    "priority": "medium",
+    "due_date": null,
+    "project": "Katie's business — hosting cleanup",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-017",
+    "title": "Build own house-info dashboard (replace DAC board)",
+    "priority": "medium",
+    "due_date": null,
+    "project": "House-info dashboard",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-018",
+    "title": "Cancel Swimply",
+    "priority": "medium",
+    "due_date": null,
+    "project": null,
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-019",
+    "title": "Check spare tire setup — my car",
+    "priority": "medium",
+    "due_date": null,
+    "project": null,
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-020",
+    "title": "Check spare tire setup — wife's car",
+    "priority": "medium",
+    "due_date": null,
+    "project": null,
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-021",
+    "title": "Close out the old hosting (no data loss)",
+    "priority": "medium",
+    "due_date": null,
+    "project": "Katie's business — hosting cleanup",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-022",
+    "title": "Consolidate sites onto Vercel",
+    "priority": "medium",
+    "due_date": null,
+    "project": "Katie's business — hosting cleanup",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-023",
+    "title": "Display running total by category on a dedicated screen",
+    "priority": "medium",
+    "due_date": null,
+    "project": "Credit-card spending dashboard",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-024",
+    "title": "Host the dashboard on the Mac mini",
+    "priority": "medium",
+    "due_date": null,
+    "project": "House-info dashboard",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-025",
+    "title": "Identify what's still paid on the other host",
+    "priority": "medium",
+    "due_date": null,
+    "project": "Katie's business — hosting cleanup",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-026",
+    "title": "Research existing credit-card dashboard tools",
+    "priority": "medium",
+    "due_date": null,
+    "project": "Credit-card spending dashboard",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-027",
+    "title": "Set up the dashboard",
+    "priority": "medium",
+    "due_date": null,
+    "project": "Credit-card spending dashboard",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-028",
+    "title": "Power-wash the back porch",
+    "priority": "low",
+    "due_date": "2026-07-11",
+    "project": null,
+    "completed": true,
+    "notes": ""
+  },
+  {
+    "id": "task-029",
+    "title": "Set up Simply Piano + first lesson",
+    "priority": "low",
+    "due_date": "2026-10-01",
+    "project": null,
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-030",
+    "title": "3D-print a Yeti cap organizer",
+    "priority": "low",
+    "due_date": null,
+    "project": null,
+    "completed": true,
+    "notes": ""
+  },
+  {
+    "id": "task-031",
+    "title": "3D-print housings for kids' transmitter tool",
+    "priority": "low",
+    "due_date": null,
+    "project": null,
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-032",
+    "title": "3D-print the liner/tray",
+    "priority": "low",
+    "due_date": null,
+    "project": "3D-print truck liner/tray",
+    "completed": true,
+    "notes": ""
+  },
+  {
+    "id": "task-033",
+    "title": "Assemble quick-fishing box for the truck",
+    "priority": "low",
+    "due_date": null,
+    "project": "Fishing gear prep",
+    "completed": true,
+    "notes": ""
+  },
+  {
+    "id": "task-034",
+    "title": "Clean out & organize the big equipment box",
+    "priority": "low",
+    "due_date": null,
+    "project": "Fishing gear prep",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-035",
+    "title": "Cut out photos & install in truck",
+    "priority": "low",
+    "due_date": null,
+    "project": "Print new truck photos",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-036",
+    "title": "Design a custom liner/tray that fits",
+    "priority": "low",
+    "due_date": null,
+    "project": "3D-print truck liner/tray",
+    "completed": true,
+    "notes": ""
+  },
+  {
+    "id": "task-037",
+    "title": "Edit photos to correct size",
+    "priority": "low",
+    "due_date": null,
+    "project": "Print new truck photos",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-038",
+    "title": "Find the right photos",
+    "priority": "low",
+    "due_date": null,
+    "project": "Print new truck photos",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-039",
+    "title": "Measure truck spaces for photos",
+    "priority": "low",
+    "due_date": null,
+    "project": "Print new truck photos",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-040",
+    "title": "Order/send photos to Walgreens",
+    "priority": "low",
+    "due_date": null,
+    "project": "Print new truck photos",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-041",
+    "title": "Paint new numbers on the driveway",
+    "priority": "low",
+    "due_date": null,
+    "project": null,
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-042",
+    "title": "Pick up photos at Walgreens",
+    "priority": "low",
+    "due_date": null,
+    "project": "Print new truck photos",
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-043",
+    "title": "Remove watch links + replace watch battery",
+    "priority": "low",
+    "due_date": null,
+    "project": null,
+    "completed": false,
+    "notes": ""
+  },
+  {
+    "id": "task-044",
+    "title": "Restring all fishing reels",
+    "priority": "low",
+    "due_date": null,
+    "project": "Fishing gear prep",
+    "completed": true,
+    "notes": ""
+  },
+  {
+    "id": "task-045",
+    "title": "Search online for a pre-made truck liner/tray",
+    "priority": "low",
+    "due_date": null,
+    "project": "3D-print truck liner/tray",
+    "completed": true,
+    "notes": ""
+  },
+  {
+    "id": "task-046",
+    "title": "Take down backyard bird feeder",
+    "priority": "low",
+    "due_date": null,
+    "project": null,
+    "completed": false,
+    "notes": ""
+  }
+]
