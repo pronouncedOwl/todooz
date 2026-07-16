@@ -47,7 +47,6 @@ export default function RecurringSection({ initialItems }) {
       state
         .map((item) => (item.id === id ? { ...item, completed } : item))
         .sort((a, b) => {
-          if (a.completed !== b.completed) return a.completed ? 1 : -1;
           if (b.miss_streak !== a.miss_streak) return b.miss_streak - a.miss_streak;
           if (a.title !== b.title) return a.title.localeCompare(b.title);
           return a.occurrence - b.occurrence;
@@ -55,8 +54,8 @@ export default function RecurringSection({ initialItems }) {
   );
   const [, startTransition] = useTransition();
 
-  const openCount = items.filter((i) => !i.completed).length;
-  const doneCount = items.filter((i) => i.completed).length;
+  const openItems = items.filter((i) => !i.completed);
+  const doneCount = items.length - openItems.length;
 
   function handleToggle(id, completed) {
     startTransition(async () => {
@@ -65,7 +64,7 @@ export default function RecurringSection({ initialItems }) {
     });
   }
 
-  if (items.length === 0) return null;
+  if (openItems.length === 0) return null;
 
   return (
     <section className="mb-8">
@@ -78,12 +77,12 @@ export default function RecurringSection({ initialItems }) {
         </div>
         <span className="shrink-0 text-[13px] text-[#777]">
           {doneCount} / {items.length} done
-          {openCount > 0 ? ` · ${openCount} left` : ""}
+          {openItems.length > 0 ? ` · ${openItems.length} left` : ""}
         </span>
       </div>
 
       <ul className="flex flex-col gap-1.5">
-        {items.map((item) => (
+        {openItems.map((item) => (
           <RecurringItem key={item.id} item={item} onToggle={handleToggle} />
         ))}
       </ul>
