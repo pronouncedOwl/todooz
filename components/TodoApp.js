@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
 import { addTodo, saveNotes, saveTodo, toggleTodo } from "@/app/actions";
 import RecurringSection from "@/components/RecurringSection";
@@ -539,13 +540,21 @@ export default function TodoApp({ initialTodos, initialRecurring = [] }) {
           </p>
         </div>
         {!adding && (
-          <button
-            type="button"
-            onClick={handleAdd}
-            className="shrink-0 rounded-full border border-ink bg-ink px-3.5 py-1.5 text-[13px] font-medium text-white"
-          >
-            Add
-          </button>
+          <div className="flex shrink-0 items-center gap-2">
+            <Link
+              href="/export"
+              className="rounded-full border border-line bg-white px-3.5 py-1.5 text-[13px] font-medium text-muted hover:border-ink/30 hover:text-ink"
+            >
+              Export
+            </Link>
+            <button
+              type="button"
+              onClick={handleAdd}
+              className="rounded-full border border-ink bg-ink px-3.5 py-1.5 text-[13px] font-medium text-white"
+            >
+              Add
+            </button>
+          </div>
         )}
       </header>
 
