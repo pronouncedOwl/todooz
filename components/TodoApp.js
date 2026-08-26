@@ -1,11 +1,22 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
-import { addTodo, saveNotes, saveTodo, toggleTodo } from "@/app/actions";
+import { addTodo, makeTodoRecurring, saveNotes, saveTodo, toggleTodo } from "@/app/actions";
+import RecurringForm, {
+  EMPTY_RECURRING_DRAFT,
+  draftToRecurringFields,
+} from "@/components/RecurringForm";
 import RecurringSection from "@/components/RecurringSection";
 
 const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 };
+
+const WEEKDAY_BY_INDEX = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
+
+function localWeekdayCode(now = new Date()) {
+  return WEEKDAY_BY_INDEX[now.getDay()] || "MO";
+}
 
 const EMPTY_DRAFT = {
   title: "",
@@ -243,25 +254,31 @@ function TodoItem({
   todo,
   expanded,
   editing,
+  promoting,
   draft,
+  recurringDraft,
   saving,
   onToggleExpand,
   onToggle,
   onEdit,
+  onPromote,
   onDraftChange,
+  onRecurringDraftChange,
   onSave,
+  onSavePromote,
   onCancel,
   onSaveNotes,
 }) {
   const due = formatDue(todo.due_date);
   const hasNotes = Boolean(todo.notes?.trim());
+  const busy = editing || promoting;
 
   return (
     <li
       className={[
         "rounded-[10px] border bg-white px-3 py-2.5 transition-colors",
-        expanded || editing ? "border-ink/25 shadow-sm" : "border-[#eee]",
-        !expanded && !editing && todo.completed ? "opacity-45" : "",
+        expanded || busy ? "border-ink/25 shadow-sm" : "border-[#eee]",
+        !expanded && !busy && todo.completed ? "opacity-45" : "",
       ].join(" ")}
     >
       <div className="flex items-start gap-2.5">
@@ -269,7 +286,7 @@ function TodoItem({
           type="checkbox"
           checked={todo.completed}
           onChange={(e) => onToggle(todo.id, e.target.checked)}
-          disabled={editing}
+          disabled={busy}
           className="mt-1 h-4 w-4 shrink-0 cursor-pointer accent-ink disabled:cursor-default"
           aria-label={`Mark "${todo.title}" ${todo.completed ? "incomplete" : "complete"}`}
           onClick={(e) => e.stopPropagation()}
@@ -280,7 +297,7 @@ function TodoItem({
               type="button"
               onClick={() => onToggleExpand(todo.id)}
               className="min-w-0 flex-1 text-left"
-              disabled={editing}
+              disabled={busy}
             >
               <div
                 className={[
@@ -304,23 +321,32 @@ function TodoItem({
                   </span>
                 )}
                 {todo.project && <span>{todo.project}</span>}
-                {hasNotes && !expanded && !editing && (
+                {hasNotes && !expanded && !busy && (
                   <span className="text-[#aaa]">Has notes</span>
                 )}
               </div>
             </button>
-            {!editing && (
-              <button
-                type="button"
-                onClick={() => onEdit(todo)}
-                className="shrink-0 rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink"
-              >
-                Edit
-              </button>
+            {!busy && (
+              <div className="flex shrink-0 items-center gap-0.5">
+                <button
+                  type="button"
+                  onClick={() => onPromote(todo)}
+                  className="rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink"
+                >
+                  Make recurring
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onEdit(todo)}
+                  className="rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink"
+                >
+                  Edit
+                </button>
+              </div>
             )}
           </div>
 
-          {expanded && !editing && (
+          {expanded && !busy && (
             <div className="mt-3 border-t border-[#eee] pt-3">
               <NotesEditor
                 value={todo.notes}
@@ -340,6 +366,23 @@ function TodoItem({
               submitLabel="Save"
             />
           )}
+
+          {promoting && (
+            <div className="mt-3 border-t border-[#eee] pt-3">
+              <div className="text-sm font-medium text-ink">
+                Make “{todo.title}” recurring
+              </div>
+              <RecurringForm
+                draft={recurringDraft}
+                onChange={onRecurringDraftChange}
+                onSave={onSavePromote}
+                onCancel={onCancel}
+                saving={saving}
+                submitLabel="Convert"
+                titleEditable={false}
+              />
+            </div>
+          )}
         </div>
       </div>
     </li>
@@ -351,13 +394,18 @@ function TodoGroup({
   todos,
   expandedId,
   editingId,
+  promotingId,
   draft,
+  recurringDraft,
   saving,
   onToggleExpand,
   onToggle,
   onEdit,
+  onPromote,
   onDraftChange,
+  onRecurringDraftChange,
   onSave,
+  onSavePromote,
   onCancel,
   onSaveNotes,
 }) {
@@ -374,13 +422,18 @@ function TodoGroup({
             todo={todo}
             expanded={expandedId === todo.id}
             editing={editingId === todo.id}
+            promoting={promotingId === todo.id}
             draft={draft}
+            recurringDraft={recurringDraft}
             saving={saving}
             onToggleExpand={onToggleExpand}
             onToggle={onToggle}
             onEdit={onEdit}
+            onPromote={onPromote}
             onDraftChange={onDraftChange}
+            onRecurringDraftChange={onRecurringDraftChange}
             onSave={onSave}
+            onSavePromote={onSavePromote}
             onCancel={onCancel}
             onSaveNotes={onSaveNotes}
           />
@@ -391,12 +444,15 @@ function TodoGroup({
 }
 
 export default function TodoApp({ initialTodos, initialRecurring = [] }) {
+  const router = useRouter();
   const [filter, setFilter] = useState("all");
   const [hideDone, setHideDone] = useState(false);
   const [expandedId, setExpandedId] = useState(null);
   const [editingId, setEditingId] = useState(null);
+  const [promotingId, setPromotingId] = useState(null);
   const [adding, setAdding] = useState(false);
   const [draft, setDraft] = useState(EMPTY_DRAFT);
+  const [recurringDraft, setRecurringDraft] = useState(EMPTY_RECURRING_DRAFT);
   const [saving, setSaving] = useState(false);
   const [optimisticTodos, setOptimistic] = useOptimistic(
     initialTodos,
@@ -413,6 +469,9 @@ export default function TodoApp({ initialTodos, initialRecurring = [] }) {
       }
       if (action.type === "add") {
         return [...state, action.todo];
+      }
+      if (action.type === "remove") {
+        return state.filter((t) => t.id !== action.id);
       }
       return state;
     },
@@ -456,8 +515,10 @@ export default function TodoApp({ initialTodos, initialRecurring = [] }) {
 
   function closeEditor() {
     setEditingId(null);
+    setPromotingId(null);
     setAdding(false);
     setDraft(EMPTY_DRAFT);
+    setRecurringDraft(EMPTY_RECURRING_DRAFT);
     setSaving(false);
   }
 
@@ -467,13 +528,28 @@ export default function TodoApp({ initialTodos, initialRecurring = [] }) {
 
   function handleEdit(todo) {
     setAdding(false);
+    setPromotingId(null);
     setExpandedId(null);
     setEditingId(todo.id);
     setDraft(todoToDraft(todo));
   }
 
+  function handlePromote(todo) {
+    setAdding(false);
+    setEditingId(null);
+    setExpandedId(null);
+    setPromotingId(todo.id);
+    setRecurringDraft({
+      ...EMPTY_RECURRING_DRAFT,
+      title: todo.title ?? "",
+      notes: typeof todo.notes === "string" ? todo.notes : "",
+      byweekday: [localWeekdayCode()],
+    });
+  }
+
   function handleAdd() {
     setEditingId(null);
+    setPromotingId(null);
     setExpandedId(null);
     setAdding(true);
     setDraft(EMPTY_DRAFT);
@@ -504,6 +580,24 @@ export default function TodoApp({ initialTodos, initialRecurring = [] }) {
     });
   }
 
+  function handleSavePromote() {
+    if (!promotingId) return;
+    const fields = draftToRecurringFields(recurringDraft);
+    setSaving(true);
+    startTransition(async () => {
+      try {
+        setOptimistic({ type: "remove", id: promotingId });
+        await makeTodoRecurring(promotingId, fields);
+        closeEditor();
+        router.refresh();
+      } catch (err) {
+        setSaving(false);
+        window.alert(err?.message || "Could not convert todo");
+        router.refresh();
+      }
+    });
+  }
+
   function handleSaveAdd() {
     const fields = draftToFields(draft);
     setSaving(true);
@@ -517,13 +611,18 @@ export default function TodoApp({ initialTodos, initialRecurring = [] }) {
   const groupProps = {
     expandedId,
     editingId,
+    promotingId,
     draft,
+    recurringDraft,
     saving,
     onToggleExpand: handleToggleExpand,
     onToggle: handleToggle,
     onEdit: handleEdit,
+    onPromote: handlePromote,
     onDraftChange: setDraft,
+    onRecurringDraftChange: setRecurringDraft,
     onSave: handleSaveEdit,
+    onSavePromote: handleSavePromote,
     onCancel: closeEditor,
     onSaveNotes: handleSaveNotes,
   };
