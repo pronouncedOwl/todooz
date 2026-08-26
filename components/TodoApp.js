@@ -3,12 +3,21 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useOptimistic, useState, useTransition } from "react";
-import { addTodo, makeTodoRecurring, saveNotes, saveTodo, toggleTodo } from "@/app/actions";
+import {
+  addTodo,
+  convertTodoToProject,
+  makeTodoRecurring,
+  saveNotes,
+  saveTodo,
+  toggleTodo,
+} from "@/app/actions";
 import RecurringForm, {
   EMPTY_RECURRING_DRAFT,
   draftToRecurringFields,
 } from "@/components/RecurringForm";
 import RecurringSection from "@/components/RecurringSection";
+import EstimateChips from "@/components/EstimateChips";
+import { formatEstimate, formatRemainingEstimate } from "@/lib/estimates";
 
 const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 };
 
@@ -25,6 +34,7 @@ const EMPTY_DRAFT = {
   project: "",
   completed: false,
   notes: "",
+  estimate_minutes: null,
 };
 
 function todayISO() {
@@ -53,6 +63,7 @@ function todoToDraft(todo) {
     project: todo.project ?? "",
     completed: Boolean(todo.completed),
     notes: todo.notes ?? "",
+    estimate_minutes: todo.estimate_minutes ?? null,
   };
 }
 
@@ -64,6 +75,7 @@ function draftToFields(draft) {
     project: draft.project || null,
     completed: Boolean(draft.completed),
     notes: draft.notes ?? "",
+    estimate_minutes: draft.estimate_minutes ?? null,
   };
 }
 
@@ -103,14 +115,62 @@ function fieldClassName() {
   return "w-full rounded-lg border border-[#e2e2e2] bg-[#fafaf8] px-3 py-2 text-sm text-ink outline-none focus:border-ink/40";
 }
 
+function ProjectPicker({ value, onChange, projects }) {
+  const known = projects ?? [];
+  const [creatingNew, setCreatingNew] = useState(false);
+  const showNewInput =
+    creatingNew || (Boolean(value) && !known.includes(value));
+
+  function selectExisting(name) {
+    if (name === "__new__") {
+      setCreatingNew(true);
+      onChange("");
+      return;
+    }
+    setCreatingNew(false);
+    onChange(name);
+  }
+
+  return (
+    <div className="space-y-2">
+      <label className="block">
+        <span className="mb-1 block text-[12px] font-medium text-[#777]">
+          Project
+        </span>
+        <select
+          value={showNewInput ? "__new__" : value || ""}
+          onChange={(e) => selectExisting(e.target.value)}
+          className={fieldClassName()}
+        >
+          <option value="">None</option>
+          {known.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+          <option value="__new__">New project…</option>
+        </select>
+      </label>
+      {showNewInput && (
+        <input
+          autoFocus
+          value={value || ""}
+          onChange={(e) => {
+            setCreatingNew(true);
+            onChange(e.target.value);
+          }}
+          className={fieldClassName()}
+          placeholder="Project name"
+        />
+      )}
+    </div>
+  );
+}
+
 function NotesEditor({ value, onSave, autoFocus = false }) {
   const [text, setText] = useState(value ?? "");
   const [saving, setSaving] = useState(false);
   const [, startTransition] = useTransition();
-
-  useEffect(() => {
-    setText(value ?? "");
-  }, [value]);
 
   function persist(next) {
     if ((next ?? "") === (value ?? "")) return;
@@ -150,7 +210,10 @@ function TodoForm({
   onMakeRecurring,
   saving,
   submitLabel,
+  projects,
 }) {
+  const showProjectNudge =
+    draft.estimate_minutes === 240 && !String(draft.project ?? "").trim();
   return (
     <form
       className="mt-3 space-y-3 border-t border-[#eee] pt-3"
@@ -202,17 +265,23 @@ function TodoForm({
         </label>
       </div>
 
-      <label className="block">
-        <span className="mb-1 block text-[12px] font-medium text-[#777]">
-          Project
-        </span>
-        <input
-          value={draft.project}
-          onChange={(e) => onChange({ ...draft, project: e.target.value })}
-          className={fieldClassName()}
-          placeholder="Optional"
-        />
-      </label>
+      <EstimateChips
+        value={draft.estimate_minutes}
+        onChange={(estimate_minutes) =>
+          onChange({ ...draft, estimate_minutes })
+        }
+      />
+      {showProjectNudge && (
+        <p className="text-[12px] text-[#a06a12]">
+          This looks like a project — consider grouping it under Projects.
+        </p>
+      )}
+
+      <ProjectPicker
+        value={draft.project}
+        onChange={(project) => onChange({ ...draft, project })}
+        projects={projects}
+      />
 
       <label className="block">
         <span className="mb-1 block text-[12px] font-medium text-[#777]">
@@ -276,6 +345,7 @@ function TodoItem({
   draft,
   recurringDraft,
   saving,
+  projects,
   onToggleExpand,
   onToggle,
   onEdit,
@@ -286,10 +356,12 @@ function TodoItem({
   onSavePromote,
   onCancel,
   onSaveNotes,
+  onMakeProject,
 }) {
   const due = formatDue(todo.due_date);
   const hasNotes = Boolean(todo.notes?.trim());
   const busy = editing || promoting;
+  const estimateLabel = formatEstimate(todo.estimate_minutes);
 
   return (
     <li
@@ -327,6 +399,9 @@ function TodoItem({
               </div>
               <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-[#888]">
                 <PriorityBadge priority={todo.priority} />
+                {estimateLabel && (
+                  <span className="font-medium text-[#666]">~{estimateLabel}</span>
+                )}
                 {due && (
                   <span
                     className={[
@@ -345,19 +420,32 @@ function TodoItem({
               </div>
             </button>
             {!busy && (
-              <button
-                type="button"
-                onClick={() => onEdit(todo)}
-                className="shrink-0 rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink"
-              >
-                Edit
-              </button>
+              <div className="flex shrink-0 flex-col items-end gap-1">
+                <button
+                  type="button"
+                  onClick={() => onEdit(todo)}
+                  className="rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink"
+                >
+                  Edit
+                </button>
+                {!todo.project && !todo.completed && (
+                  <button
+                    type="button"
+                    onClick={() => onMakeProject(todo.id)}
+                    className="rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink"
+                    title="Turn this todo into a project"
+                  >
+                    Make project
+                  </button>
+                )}
+              </div>
             )}
           </div>
 
           {expanded && !busy && (
             <div className="mt-3 border-t border-[#eee] pt-3">
               <NotesEditor
+                key={todo.id}
                 value={todo.notes}
                 onSave={(notes) => onSaveNotes(todo.id, notes)}
                 autoFocus
@@ -380,6 +468,7 @@ function TodoItem({
               }
               saving={saving}
               submitLabel="Save"
+              projects={projects}
             />
           )}
 
@@ -414,6 +503,7 @@ function TodoGroup({
   draft,
   recurringDraft,
   saving,
+  projects,
   onToggleExpand,
   onToggle,
   onEdit,
@@ -424,6 +514,7 @@ function TodoGroup({
   onSavePromote,
   onCancel,
   onSaveNotes,
+  onMakeProject,
 }) {
   if (todos.length === 0) return null;
   return (
@@ -442,6 +533,7 @@ function TodoGroup({
             draft={draft}
             recurringDraft={recurringDraft}
             saving={saving}
+            projects={projects}
             onToggleExpand={onToggleExpand}
             onToggle={onToggle}
             onEdit={onEdit}
@@ -452,6 +544,7 @@ function TodoGroup({
             onSavePromote={onSavePromote}
             onCancel={onCancel}
             onSaveNotes={onSaveNotes}
+            onMakeProject={onMakeProject}
           />
         ))}
       </ul>
@@ -459,7 +552,11 @@ function TodoGroup({
   );
 }
 
-export default function TodoApp({ initialTodos, initialRecurring = [] }) {
+export default function TodoApp({
+  initialTodos,
+  initialRecurring = [],
+  initialProjects = [],
+}) {
   const router = useRouter();
   const [filter, setFilter] = useState("all");
   const [hideDone, setHideDone] = useState(false);
@@ -492,9 +589,26 @@ export default function TodoApp({ initialTodos, initialRecurring = [] }) {
       return state;
     },
   );
+  const [optimisticProjects, setOptimisticProjects] = useOptimistic(
+    initialProjects,
+    (state, action) => {
+      if (action.type === "add" && action.name && !state.includes(action.name)) {
+        return [...state, action.name].sort((a, b) => a.localeCompare(b));
+      }
+      return state;
+    },
+  );
   const [, startTransition] = useTransition();
 
+  const projectNames = useMemo(() => {
+    const fromTodos = optimisticTodos.map((t) => t.project).filter(Boolean);
+    return [...new Set([...optimisticProjects, ...fromTodos])].sort((a, b) =>
+      a.localeCompare(b),
+    );
+  }, [optimisticTodos, optimisticProjects]);
+
   const doneCount = optimisticTodos.filter((t) => t.completed).length;
+  const remaining = formatRemainingEstimate(optimisticTodos);
 
   const { withDue, noDue, done } = useMemo(() => {
     const filtered = optimisticTodos.filter((task) => {
@@ -560,6 +674,7 @@ export default function TodoApp({ initialTodos, initialRecurring = [] }) {
       title: todo.title ?? "",
       notes: typeof todo.notes === "string" ? todo.notes : "",
       byweekday: [localWeekdayCode()],
+      estimate_minutes: todo.estimate_minutes ?? null,
     });
   }
 
@@ -590,6 +705,9 @@ export default function TodoApp({ initialTodos, initialRecurring = [] }) {
     const fields = draftToFields(draft);
     setSaving(true);
     startTransition(async () => {
+      if (fields.project) {
+        setOptimisticProjects({ type: "add", name: fields.project });
+      }
       setOptimistic({ type: "update", todo: { id: editingId, ...fields } });
       await saveTodo(editingId, fields);
       closeEditor();
@@ -618,9 +736,22 @@ export default function TodoApp({ initialTodos, initialRecurring = [] }) {
     const fields = draftToFields(draft);
     setSaving(true);
     startTransition(async () => {
+      if (fields.project) {
+        setOptimisticProjects({ type: "add", name: fields.project });
+      }
       const created = await addTodo(fields);
       setOptimistic({ type: "add", todo: created });
       closeEditor();
+    });
+  }
+
+  function handleMakeProject(id) {
+    startTransition(async () => {
+      const updated = await convertTodoToProject(id);
+      setOptimistic({ type: "update", todo: updated });
+      if (updated.project) {
+        setOptimisticProjects({ type: "add", name: updated.project });
+      }
     });
   }
 
@@ -631,6 +762,7 @@ export default function TodoApp({ initialTodos, initialRecurring = [] }) {
     draft,
     recurringDraft,
     saving,
+    projects: projectNames,
     onToggleExpand: handleToggleExpand,
     onToggle: handleToggle,
     onEdit: handleEdit,
@@ -641,6 +773,7 @@ export default function TodoApp({ initialTodos, initialRecurring = [] }) {
     onSavePromote: handleSavePromote,
     onCancel: closeEditor,
     onSaveNotes: handleSaveNotes,
+    onMakeProject: handleMakeProject,
   };
 
   return (
@@ -683,6 +816,7 @@ export default function TodoApp({ initialTodos, initialRecurring = [] }) {
             onCancel={closeEditor}
             saving={saving}
             submitLabel="Add"
+            projects={projectNames}
           />
         </div>
       )}
@@ -705,6 +839,7 @@ export default function TodoApp({ initialTodos, initialRecurring = [] }) {
         </FilterButton>
         <span className="ml-auto text-[13px] text-[#777]">
           {doneCount} / {optimisticTodos.length} done
+          {remaining ? ` · ${remaining}` : ""}
         </span>
       </div>
 

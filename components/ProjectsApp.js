@@ -4,9 +4,12 @@ import { useMemo, useOptimistic, useState, useTransition } from "react";
 import {
   addProject,
   addTodo,
+  removeProject,
   removeTodo,
   toggleTodo,
 } from "@/app/actions";
+import EstimateChips from "@/components/EstimateChips";
+import { formatEstimate, formatRemainingEstimate } from "@/lib/estimates";
 
 const PRIORITY_ORDER = { high: 0, medium: 1, low: 2 };
 
@@ -61,6 +64,7 @@ function sortTodos(todos) {
 
 function ProjectTask({ todo, onToggle, onRemove }) {
   const due = formatDue(todo.due_date);
+  const estimateLabel = formatEstimate(todo.estimate_minutes);
 
   return (
     <li
@@ -87,6 +91,9 @@ function ProjectTask({ todo, onToggle, onRemove }) {
         </div>
         <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-[#888]">
           <PriorityBadge priority={todo.priority} />
+          {estimateLabel && (
+            <span className="font-medium text-[#666]">~{estimateLabel}</span>
+          )}
           {due && (
             <span
               className={[
@@ -116,6 +123,7 @@ function AddSubtaskForm({ projectName, onAdd, onCancel }) {
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState("medium");
   const [dueDate, setDueDate] = useState("");
+  const [estimateMinutes, setEstimateMinutes] = useState(null);
   const [saving, setSaving] = useState(false);
 
   async function handleSubmit(e) {
@@ -129,10 +137,12 @@ function AddSubtaskForm({ projectName, onAdd, onCancel }) {
       project: projectName,
       completed: false,
       notes: "",
+      estimate_minutes: estimateMinutes,
     });
     setTitle("");
     setPriority("medium");
     setDueDate("");
+    setEstimateMinutes(null);
     setSaving(false);
   }
 
@@ -166,6 +176,10 @@ function AddSubtaskForm({ projectName, onAdd, onCancel }) {
           className={fieldClassName()}
         />
       </div>
+      <EstimateChips
+        value={estimateMinutes}
+        onChange={setEstimateMinutes}
+      />
       <div className="flex gap-2">
         <button
           type="submit"
@@ -198,9 +212,11 @@ function ProjectCard({
   onAddSubtask,
   onToggle,
   onRemove,
+  onDeleteProject,
 }) {
   const done = todos.filter((t) => t.completed).length;
   const sorted = sortTodos(todos);
+  const remaining = formatRemainingEstimate(todos);
 
   return (
     <section
@@ -209,27 +225,38 @@ function ProjectCard({
         expanded ? "border-ink/25 shadow-sm" : "border-[#eee]",
       ].join(" ")}
     >
-      <button
-        type="button"
-        onClick={() => onToggleExpand(name)}
-        className="flex w-full items-center gap-3 px-3.5 py-3 text-left"
-      >
-        <span
-          className={[
-            "text-[#999] transition-transform",
-            expanded ? "rotate-90" : "",
-          ].join(" ")}
-          aria-hidden
+      <div className="flex items-center gap-1 pr-2">
+        <button
+          type="button"
+          onClick={() => onToggleExpand(name)}
+          className="flex min-w-0 flex-1 items-center gap-3 px-3.5 py-3 text-left"
         >
-          ▸
-        </span>
-        <div className="min-w-0 flex-1">
-          <div className="text-[15px] font-semibold text-ink">{name}</div>
-          <div className="mt-0.5 text-[12px] text-[#888]">
-            {done} / {todos.length} done
+          <span
+            className={[
+              "text-[#999] transition-transform",
+              expanded ? "rotate-90" : "",
+            ].join(" ")}
+            aria-hidden
+          >
+            ▸
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="text-[15px] font-semibold text-ink">{name}</div>
+            <div className="mt-0.5 text-[12px] text-[#888]">
+              {done} / {todos.length} done
+              {remaining ? ` · ${remaining}` : ""}
+            </div>
           </div>
-        </div>
-      </button>
+        </button>
+        <button
+          type="button"
+          onClick={() => onDeleteProject(name, todos.length)}
+          className="shrink-0 rounded-full px-2.5 py-1 text-[12px] text-[#999] hover:bg-[#fdeaea] hover:text-[#b23b3b]"
+          aria-label={`Delete project ${name}`}
+        >
+          Delete
+        </button>
+      </div>
 
       {expanded && (
         <div className="space-y-2 border-t border-[#eee] px-3.5 py-3">
@@ -285,6 +312,11 @@ export default function ProjectsApp({ initialTodos, initialProjects }) {
       if (action.type === "remove") {
         return state.filter((t) => t.id !== action.id);
       }
+      if (action.type === "unassignProject") {
+        return state.map((t) =>
+          t.project === action.name ? { ...t, project: null } : t,
+        );
+      }
       return state;
     },
   );
@@ -293,6 +325,9 @@ export default function ProjectsApp({ initialTodos, initialProjects }) {
     (state, action) => {
       if (action.type === "add" && !state.includes(action.name)) {
         return [...state, action.name].sort((a, b) => a.localeCompare(b));
+      }
+      if (action.type === "remove") {
+        return state.filter((n) => n !== action.name);
       }
       return state;
     },
@@ -338,6 +373,22 @@ export default function ProjectsApp({ initialTodos, initialProjects }) {
     });
   }
 
+  function handleDeleteProject(name, taskCount) {
+    const message =
+      taskCount > 0
+        ? `Delete project “${name}”? Its ${taskCount} task${taskCount === 1 ? "" : "s"} will stay as standalone todos.`
+        : `Delete project “${name}”?`;
+    if (!window.confirm(message)) return;
+
+    startTransition(async () => {
+      setOptimisticProjects({ type: "remove", name });
+      setOptimisticTodos({ type: "unassignProject", name });
+      if (expanded === name) setExpanded(null);
+      if (addingFor === name) setAddingFor(null);
+      await removeProject(name);
+    });
+  }
+
   async function handleAddSubtask(fields) {
     await new Promise((resolve) => {
       startTransition(async () => {
@@ -363,6 +414,16 @@ export default function ProjectsApp({ initialTodos, initialProjects }) {
       setAddingFor(name);
     });
   }
+
+  const cardProps = {
+    onToggleExpand: handleToggleExpand,
+    onStartAdd: setAddingFor,
+    onCancelAdd: () => setAddingFor(null),
+    onAddSubtask: handleAddSubtask,
+    onToggle: handleToggle,
+    onRemove: handleRemove,
+    onDeleteProject: handleDeleteProject,
+  };
 
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-6 sm:px-6 sm:py-8">
@@ -432,12 +493,7 @@ export default function ProjectsApp({ initialTodos, initialProjects }) {
             todos={project.todos}
             expanded={expanded === project.name}
             adding={addingFor === project.name}
-            onToggleExpand={handleToggleExpand}
-            onStartAdd={setAddingFor}
-            onCancelAdd={() => setAddingFor(null)}
-            onAddSubtask={handleAddSubtask}
-            onToggle={handleToggle}
-            onRemove={handleRemove}
+            {...cardProps}
           />
         ))}
       </div>
@@ -455,12 +511,7 @@ export default function ProjectsApp({ initialTodos, initialProjects }) {
                 todos={project.todos}
                 expanded={expanded === project.name}
                 adding={addingFor === project.name}
-                onToggleExpand={handleToggleExpand}
-                onStartAdd={setAddingFor}
-                onCancelAdd={() => setAddingFor(null)}
-                onAddSubtask={handleAddSubtask}
-                onToggle={handleToggle}
-                onRemove={handleRemove}
+                {...cardProps}
               />
             ))}
           </div>

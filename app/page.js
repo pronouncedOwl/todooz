@@ -1,13 +1,20 @@
 import TodoApp from "@/components/TodoApp";
-import { getTodos } from "@/lib/db";
+import { getProjects, getTodos } from "@/lib/db";
 import { getTodayRecurring } from "@/lib/recurring";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const [todos, recurring] = await Promise.all([
+  const [todos, recurring, projects] = await Promise.all([
     getTodos(),
     getTodayRecurring(),
+    getProjects(),
   ]);
-  return <TodoApp initialTodos={todos} initialRecurring={recurring} />;
+  return (
+    <TodoApp
+      initialTodos={todos}
+      initialRecurring={recurring}
+      initialProjects={projects}
+    />
+  );
 }

@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import {
   createProject,
   createTodo,
+  deleteProject,
   deleteTodo,
+  makeTodoIntoProject,
   setTodoCompleted,
   updateTodo,
   updateTodoNotes,
@@ -14,11 +16,17 @@ import {
   deleteRecurringTemplate,
   promoteTodoToRecurring,
   setRecurringCompleted,
+  updateRecurringTemplate,
 } from "@/lib/recurring";
 
 function revalidateTodos() {
   revalidatePath("/");
   revalidatePath("/projects");
+}
+
+function revalidateRecurring() {
+  revalidatePath("/");
+  revalidatePath("/export");
 }
 
 export async function toggleTodo(id, completed) {
@@ -28,6 +36,9 @@ export async function toggleTodo(id, completed) {
 
 export async function saveTodo(id, fields) {
   const todo = await updateTodo(id, fields);
+  if (todo.project) {
+    await createProject(todo.project);
+  }
   revalidateTodos();
   return todo;
 }
@@ -58,6 +69,18 @@ export async function addProject(name) {
   return project;
 }
 
+export async function removeProject(name) {
+  const result = await deleteProject(name);
+  revalidateTodos();
+  return result;
+}
+
+export async function convertTodoToProject(todoId) {
+  const todo = await makeTodoIntoProject(todoId);
+  revalidateTodos();
+  return todo;
+}
+
 export async function toggleRecurring(id, completed) {
   await setRecurringCompleted(id, completed);
   revalidatePath("/");
@@ -65,15 +88,19 @@ export async function toggleRecurring(id, completed) {
 
 export async function addRecurring(fields) {
   const template = await createRecurringTemplate(fields);
-  revalidatePath("/");
-  revalidatePath("/export");
+  revalidateRecurring();
+  return template;
+}
+
+export async function saveRecurring(templateId, fields) {
+  const template = await updateRecurringTemplate(templateId, fields);
+  revalidateRecurring();
   return template;
 }
 
 export async function stopRecurring(templateId) {
   const result = await deleteRecurringTemplate(templateId);
-  revalidatePath("/");
-  revalidatePath("/export");
+  revalidateRecurring();
   return result;
 }
 

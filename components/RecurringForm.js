@@ -1,5 +1,7 @@
 "use client";
 
+import EstimateChips from "@/components/EstimateChips";
+
 const WEEKDAYS = [
   { code: "SU", label: "Su" },
   { code: "MO", label: "Mo" },
@@ -16,6 +18,7 @@ export const EMPTY_RECURRING_DRAFT = {
   schedule: "daily",
   byweekday: [],
   times_per_day: 1,
+  estimate_minutes: null,
 };
 
 function fieldClassName() {
@@ -29,6 +32,8 @@ export function draftToRecurringFields(draft) {
   const times = Math.max(1, Math.min(20, Number(draft.times_per_day) || 1));
   const schedule = draft.schedule || "daily";
 
+  const estimate_minutes = draft.estimate_minutes ?? null;
+
   if (schedule === "weekly") {
     return {
       title,
@@ -37,6 +42,7 @@ export function draftToRecurringFields(draft) {
       interval: 1,
       times_per_day: times,
       byweekday: Array.isArray(draft.byweekday) ? draft.byweekday : [],
+      estimate_minutes,
     };
   }
 
@@ -47,6 +53,7 @@ export function draftToRecurringFields(draft) {
       freq: "DAILY",
       interval: 2,
       times_per_day: times,
+      estimate_minutes,
     };
   }
 
@@ -56,6 +63,7 @@ export function draftToRecurringFields(draft) {
     freq: "DAILY",
     interval: 1,
     times_per_day: times,
+    estimate_minutes,
   };
 }
 
@@ -183,6 +191,11 @@ export default function RecurringForm({
           className={`${fieldClassName()} max-w-[6rem]`}
         />
       </label>
+
+      <EstimateChips
+        value={draft.estimate_minutes}
+        onChange={(estimate_minutes) => onChange({ ...draft, estimate_minutes })}
+      />
 
       <div className="flex gap-2 pt-1">
         <button

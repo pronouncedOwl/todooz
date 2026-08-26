@@ -2,11 +2,17 @@
 
 import { useOptimistic, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { addRecurring, stopRecurring, toggleRecurring } from "@/app/actions";
+import {
+  addRecurring,
+  saveRecurring,
+  stopRecurring,
+  toggleRecurring,
+} from "@/app/actions";
 import RecurringForm, {
   EMPTY_RECURRING_DRAFT,
   draftToRecurringFields,
 } from "@/components/RecurringForm";
+import { formatEstimate, formatRemainingEstimate } from "@/lib/estimates";
 
 const WEEKDAY_BY_INDEX = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
 
@@ -14,7 +20,28 @@ function localWeekdayCode(now = new Date()) {
   return WEEKDAY_BY_INDEX[now.getDay()] || "MO";
 }
 
-function RecurringItem({ item, onToggle, onStop, stopping }) {
+function scheduleFromItem(item) {
+  if (item.freq === "WEEKLY") return "weekly";
+  if (Number(item.interval) > 1) return "every2";
+  return "daily";
+}
+
+function itemToRecurringDraft(item) {
+  return {
+    ...EMPTY_RECURRING_DRAFT,
+    title:
+      item.template_title || item.title.replace(/\s*\(\d+\/\d+\)\s*$/, ""),
+    notes: item.notes || "",
+    schedule: scheduleFromItem(item),
+    byweekday: Array.isArray(item.byweekday) ? [...item.byweekday] : [],
+    times_per_day: item.times_per_day || 1,
+    estimate_minutes: item.estimate_minutes ?? null,
+  };
+}
+
+function RecurringItem({ item, onToggle, onEdit, onStop, stopping }) {
+  const estimateLabel = formatEstimate(item.estimate_minutes);
+
   return (
     <li
       className={[
@@ -39,6 +66,9 @@ function RecurringItem({ item, onToggle, onStop, stopping }) {
           {item.title}
         </div>
         <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-[#888]">
+          {estimateLabel && (
+            <span className="font-medium text-[#666]">~{estimateLabel}</span>
+          )}
           {item.miss_streak > 0 && !item.completed && (
             <span className="rounded-full bg-[#fdeaea] px-2 py-0.5 text-[11px] font-semibold text-[#b23b3b]">
               Missed {item.miss_streak}×
@@ -47,14 +77,23 @@ function RecurringItem({ item, onToggle, onStop, stopping }) {
           {item.notes && <span>{item.notes}</span>}
         </div>
       </div>
-      <button
-        type="button"
-        onClick={() => onStop(item.template_id, item.title)}
-        disabled={stopping}
-        className="shrink-0 rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink disabled:opacity-40"
-      >
-        Stop
-      </button>
+      <div className="flex shrink-0 flex-col items-end gap-1">
+        <button
+          type="button"
+          onClick={() => onEdit(item)}
+          className="rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink"
+        >
+          Edit
+        </button>
+        <button
+          type="button"
+          onClick={() => onStop(item.template_id, item.title)}
+          disabled={stopping}
+          className="rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink disabled:opacity-40"
+        >
+          Stop
+        </button>
+      </div>
     </li>
   );
 }
@@ -62,6 +101,7 @@ function RecurringItem({ item, onToggle, onStop, stopping }) {
 export default function RecurringSection({ initialItems }) {
   const router = useRouter();
   const [adding, setAdding] = useState(false);
+  const [editingTemplateId, setEditingTemplateId] = useState(null);
   const [draft, setDraft] = useState(EMPTY_RECURRING_DRAFT);
   const [saving, setSaving] = useState(false);
   const [stoppingId, setStoppingId] = useState(null);
@@ -84,6 +124,23 @@ export default function RecurringSection({ initialItems }) {
       if (action.type === "removeTemplate") {
         return state.filter((item) => item.template_id !== action.templateId);
       }
+      if (action.type === "updateTemplate") {
+        const fields = action.fields;
+        const times = Math.max(1, Number(fields.times_per_day) || 1);
+        return state.map((item) => {
+          if (item.template_id !== action.templateId) return item;
+          const title =
+            times <= 1
+              ? fields.title
+              : `${fields.title} (${item.occurrence}/${times})`;
+          return {
+            ...item,
+            ...fields,
+            title,
+            template_title: fields.title,
+          };
+        });
+      }
       return state;
     },
   );
@@ -91,19 +148,28 @@ export default function RecurringSection({ initialItems }) {
 
   const openItems = items.filter((i) => !i.completed);
   const doneCount = items.length - openItems.length;
+  const remaining = formatRemainingEstimate(items);
 
-  function closeAdd() {
+  function closeForm() {
     setAdding(false);
+    setEditingTemplateId(null);
     setDraft(EMPTY_RECURRING_DRAFT);
     setSaving(false);
   }
 
   function handleAdd() {
+    setEditingTemplateId(null);
     setDraft({
       ...EMPTY_RECURRING_DRAFT,
       byweekday: [localWeekdayCode()],
     });
     setAdding(true);
+  }
+
+  function handleEdit(item) {
+    setAdding(false);
+    setEditingTemplateId(item.template_id);
+    setDraft(itemToRecurringDraft(item));
   }
 
   function handleToggle(id, completed) {
@@ -136,11 +202,32 @@ export default function RecurringSection({ initialItems }) {
     startTransition(async () => {
       try {
         await addRecurring(fields);
-        closeAdd();
+        closeForm();
         router.refresh();
       } catch (err) {
         setSaving(false);
         window.alert(err?.message || "Could not add habit");
+      }
+    });
+  }
+
+  function handleSaveEdit() {
+    if (!editingTemplateId) return;
+    const fields = draftToRecurringFields(draft);
+    setSaving(true);
+    startTransition(async () => {
+      try {
+        setOptimistic({
+          type: "updateTemplate",
+          templateId: editingTemplateId,
+          fields,
+        });
+        await saveRecurring(editingTemplateId, fields);
+        closeForm();
+        router.refresh();
+      } catch (err) {
+        setSaving(false);
+        window.alert(err?.message || "Could not save habit");
       }
     });
   }
@@ -159,9 +246,10 @@ export default function RecurringSection({ initialItems }) {
             <span className="text-[13px] text-[#777]">
               {doneCount} / {items.length} done
               {openItems.length > 0 ? ` · ${openItems.length} left` : ""}
+              {remaining ? ` · ${remaining}` : ""}
             </span>
           )}
-          {!adding && (
+          {!adding && !editingTemplateId && (
             <button
               type="button"
               onClick={handleAdd}
@@ -180,9 +268,23 @@ export default function RecurringSection({ initialItems }) {
             draft={draft}
             onChange={setDraft}
             onSave={handleSaveAdd}
-            onCancel={closeAdd}
+            onCancel={closeForm}
             saving={saving}
             submitLabel="Add"
+          />
+        </div>
+      )}
+
+      {editingTemplateId && (
+        <div className="mb-3 rounded-[10px] border border-ink/25 bg-white px-3 py-3 shadow-sm">
+          <div className="text-sm font-medium text-ink">Edit habit</div>
+          <RecurringForm
+            draft={draft}
+            onChange={setDraft}
+            onSave={handleSaveEdit}
+            onCancel={closeForm}
+            saving={saving}
+            submitLabel="Save"
           />
         </div>
       )}
@@ -194,13 +296,15 @@ export default function RecurringSection({ initialItems }) {
               key={item.id}
               item={item}
               onToggle={handleToggle}
+              onEdit={handleEdit}
               onStop={handleStop}
               stopping={stoppingId === item.template_id}
             />
           ))}
         </ul>
       ) : (
-        !adding && (
+        !adding &&
+        !editingTemplateId && (
           <p className="rounded-[10px] border border-dashed border-line bg-white/60 px-4 py-6 text-center text-sm text-[#888]">
             {items.length > 0
               ? "All done for today."
