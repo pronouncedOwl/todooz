@@ -9,7 +9,12 @@ import {
   updateTodo,
   updateTodoNotes,
 } from "@/lib/db";
-import { setRecurringCompleted } from "@/lib/recurring";
+import {
+  createRecurringTemplate,
+  deleteRecurringTemplate,
+  promoteTodoToRecurring,
+  setRecurringCompleted,
+} from "@/lib/recurring";
 
 function revalidateTodos() {
   revalidatePath("/");
@@ -56,4 +61,25 @@ export async function addProject(name) {
 export async function toggleRecurring(id, completed) {
   await setRecurringCompleted(id, completed);
   revalidatePath("/");
+}
+
+export async function addRecurring(fields) {
+  const template = await createRecurringTemplate(fields);
+  revalidatePath("/");
+  revalidatePath("/export");
+  return template;
+}
+
+export async function stopRecurring(templateId) {
+  const result = await deleteRecurringTemplate(templateId);
+  revalidatePath("/");
+  revalidatePath("/export");
+  return result;
+}
+
+export async function makeTodoRecurring(todoId, scheduleFields) {
+  const template = await promoteTodoToRecurring(todoId, scheduleFields);
+  revalidateTodos();
+  revalidatePath("/export");
+  return template;
 }
