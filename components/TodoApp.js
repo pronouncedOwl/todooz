@@ -142,7 +142,15 @@ function NotesEditor({ value, onSave, autoFocus = false }) {
   );
 }
 
-function TodoForm({ draft, onChange, onSave, onCancel, saving, submitLabel }) {
+function TodoForm({
+  draft,
+  onChange,
+  onSave,
+  onCancel,
+  onMakeRecurring,
+  saving,
+  submitLabel,
+}) {
   return (
     <form
       className="mt-3 space-y-3 border-t border-[#eee] pt-3"
@@ -229,7 +237,7 @@ function TodoForm({ draft, onChange, onSave, onCancel, saving, submitLabel }) {
         Completed
       </label>
 
-      <div className="flex gap-2 pt-1">
+      <div className="flex flex-wrap gap-2 pt-1">
         <button
           type="submit"
           disabled={saving || !draft.title.trim()}
@@ -245,6 +253,16 @@ function TodoForm({ draft, onChange, onSave, onCancel, saving, submitLabel }) {
         >
           Cancel
         </button>
+        {onMakeRecurring && (
+          <button
+            type="button"
+            onClick={onMakeRecurring}
+            disabled={saving || !draft.title.trim()}
+            className="rounded-full border border-line bg-white px-4 py-1.5 text-[13px] text-muted hover:border-ink/30 hover:text-ink disabled:opacity-40"
+          >
+            Make recurring
+          </button>
+        )}
       </div>
     </form>
   );
@@ -327,22 +345,13 @@ function TodoItem({
               </div>
             </button>
             {!busy && (
-              <div className="flex shrink-0 items-center gap-0.5">
-                <button
-                  type="button"
-                  onClick={() => onPromote(todo)}
-                  className="rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink"
-                >
-                  Make recurring
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onEdit(todo)}
-                  className="rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink"
-                >
-                  Edit
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => onEdit(todo)}
+                className="shrink-0 rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink"
+              >
+                Edit
+              </button>
             )}
           </div>
 
@@ -362,6 +371,13 @@ function TodoItem({
               onChange={onDraftChange}
               onSave={onSave}
               onCancel={onCancel}
+              onMakeRecurring={() =>
+                onPromote({
+                  ...todo,
+                  title: draft.title,
+                  notes: draft.notes,
+                })
+              }
               saving={saving}
               submitLabel="Save"
             />
