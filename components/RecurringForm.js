@@ -72,6 +72,7 @@ export default function RecurringForm({
   onChange,
   onSave,
   onCancel,
+  onStop,
   saving,
   submitLabel = "Add",
   titleEditable = true,
@@ -197,7 +198,7 @@ export default function RecurringForm({
         onChange={(estimate_minutes) => onChange({ ...draft, estimate_minutes })}
       />
 
-      <div className="flex gap-2 pt-1">
+      <div className="flex flex-wrap gap-2 pt-1">
         <button
           type="submit"
           disabled={saving || !draft.title.trim() || weeklyNeedsDay}
@@ -213,6 +214,16 @@ export default function RecurringForm({
         >
           Cancel
         </button>
+        {onStop && (
+          <button
+            type="button"
+            onClick={onStop}
+            disabled={saving}
+            className="rounded-full border border-line bg-white px-4 py-1.5 text-[13px] text-muted hover:border-ink/30 hover:text-ink disabled:opacity-40"
+          >
+            Stop
+          </button>
+        )}
       </div>
     </form>
   );

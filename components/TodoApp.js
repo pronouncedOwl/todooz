@@ -208,6 +208,7 @@ function TodoForm({
   onSave,
   onCancel,
   onMakeRecurring,
+  onMakeProject,
   saving,
   submitLabel,
   projects,
@@ -332,6 +333,16 @@ function TodoForm({
             Make recurring
           </button>
         )}
+        {onMakeProject && (
+          <button
+            type="button"
+            onClick={onMakeProject}
+            disabled={saving || !draft.title.trim()}
+            className="rounded-full border border-line bg-white px-4 py-1.5 text-[13px] text-muted hover:border-ink/30 hover:text-ink disabled:opacity-40"
+          >
+            Make project
+          </button>
+        )}
       </div>
     </form>
   );
@@ -420,25 +431,13 @@ function TodoItem({
               </div>
             </button>
             {!busy && (
-              <div className="flex shrink-0 flex-col items-end gap-1">
-                <button
-                  type="button"
-                  onClick={() => onEdit(todo)}
-                  className="rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink"
-                >
-                  Edit
-                </button>
-                {!todo.project && !todo.completed && (
-                  <button
-                    type="button"
-                    onClick={() => onMakeProject(todo.id)}
-                    className="rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink"
-                    title="Turn this todo into a project"
-                  >
-                    Make project
-                  </button>
-                )}
-              </div>
+              <button
+                type="button"
+                onClick={() => onEdit(todo)}
+                className="shrink-0 rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink"
+              >
+                Edit
+              </button>
             )}
           </div>
 
@@ -465,6 +464,11 @@ function TodoItem({
                   title: draft.title,
                   notes: draft.notes,
                 })
+              }
+              onMakeProject={
+                !todo.project && !todo.completed
+                  ? () => onMakeProject(todo.id)
+                  : undefined
               }
               saving={saving}
               submitLabel="Save"
@@ -752,6 +756,7 @@ export default function TodoApp({
       if (updated.project) {
         setOptimisticProjects({ type: "add", name: updated.project });
       }
+      closeEditor();
     });
   }
 

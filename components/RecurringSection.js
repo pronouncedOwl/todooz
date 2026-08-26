@@ -39,7 +39,7 @@ function itemToRecurringDraft(item) {
   };
 }
 
-function RecurringItem({ item, onToggle, onEdit, onStop, stopping }) {
+function RecurringItem({ item, onToggle, onEdit }) {
   const estimateLabel = formatEstimate(item.estimate_minutes);
 
   return (
@@ -77,23 +77,13 @@ function RecurringItem({ item, onToggle, onEdit, onStop, stopping }) {
           {item.notes && <span>{item.notes}</span>}
         </div>
       </div>
-      <div className="flex shrink-0 flex-col items-end gap-1">
-        <button
-          type="button"
-          onClick={() => onEdit(item)}
-          className="rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink"
-        >
-          Edit
-        </button>
-        <button
-          type="button"
-          onClick={() => onStop(item.template_id, item.title)}
-          disabled={stopping}
-          className="rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink disabled:opacity-40"
-        >
-          Stop
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => onEdit(item)}
+        className="shrink-0 rounded-full px-2.5 py-1 text-[12px] font-medium text-[#777] hover:bg-[#f3f2ef] hover:text-ink"
+      >
+        Edit
+      </button>
     </li>
   );
 }
@@ -179,17 +169,22 @@ export default function RecurringSection({ initialItems }) {
     });
   }
 
-  function handleStop(templateId, title) {
+  function handleStop() {
+    const title = draft.title.trim() || "this habit";
     const ok = window.confirm(
       `Stop repeating “${title}”? This removes the habit and its history.`,
     );
     if (!ok) return;
+    const templateId = editingTemplateId;
     setStoppingId(templateId);
     startTransition(async () => {
       setOptimistic({ type: "removeTemplate", templateId });
       try {
         await stopRecurring(templateId);
+        closeForm();
         router.refresh();
+      } catch (err) {
+        window.alert(err?.message || "Could not stop habit");
       } finally {
         setStoppingId(null);
       }
@@ -283,7 +278,8 @@ export default function RecurringSection({ initialItems }) {
             onChange={setDraft}
             onSave={handleSaveEdit}
             onCancel={closeForm}
-            saving={saving}
+            onStop={handleStop}
+            saving={saving || Boolean(stoppingId)}
             submitLabel="Save"
           />
         </div>
@@ -297,8 +293,6 @@ export default function RecurringSection({ initialItems }) {
               item={item}
               onToggle={handleToggle}
               onEdit={handleEdit}
-              onStop={handleStop}
-              stopping={stoppingId === item.template_id}
             />
           ))}
         </ul>
