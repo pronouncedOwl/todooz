@@ -13,6 +13,7 @@ const WEEKDAYS = [
 ];
 
 export const TIME_OF_DAY_OPTIONS = [
+  { id: "before_wake", label: "Before wake" },
   { id: "morning", label: "Morning" },
   { id: "daytime", label: "Daytime" },
   { id: "evening", label: "Evening" },

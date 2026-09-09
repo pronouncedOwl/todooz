@@ -20,6 +20,7 @@ import { formatEstimate, formatRemainingEstimate } from "@/lib/estimates";
 const WEEKDAY_BY_INDEX = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
 
 const TIME_SECTIONS = [
+  { id: "before_wake", label: "Before wake" },
   { id: "morning", label: "Morning" },
   { id: "daytime", label: "Daytime" },
   { id: "evening", label: "Evening" },
@@ -260,7 +261,6 @@ export default function RecurringSection({
   const morningClosedToday = Boolean(
     closedOn && todayDate && closedOn === todayDate,
   );
-  const hideMorningSection = pastCutoff && morningClosedToday;
 
   const showMorningDialog =
     pastCutoff &&
@@ -269,19 +269,24 @@ export default function RecurringSection({
 
   const sections = useMemo(() => {
     return TIME_SECTIONS.map((section) => {
-      if (section.id === "morning" && hideMorningSection) {
-        return { ...section, items: [] };
-      }
-      const group = openItems
-        .filter((i) => (i.time_of_day || "daytime") === section.id)
+      const allForSection = items.filter(
+        (i) => (i.time_of_day || "daytime") === section.id,
+      );
+      const openForSection = allForSection
+        .filter(isVisibleOpen)
         .sort((a, b) => {
           if (b.miss_streak !== a.miss_streak) return b.miss_streak - a.miss_streak;
           if (a.title !== b.title) return a.title.localeCompare(b.title);
           return a.occurrence - b.occurrence;
         });
-      return { ...section, items: group };
-    }).filter((section) => section.items.length > 0);
-  }, [openItems, hideMorningSection]);
+      return {
+        ...section,
+        total: allForSection.length,
+        openItems: openForSection,
+        complete: allForSection.length > 0 && openForSection.length === 0,
+      };
+    }).filter((section) => section.total > 0);
+  }, [items]);
 
   function closeForm() {
     setAdding(false);
@@ -461,24 +466,33 @@ export default function RecurringSection({
 
       {sections.length > 0 ? (
         <div className="flex flex-col gap-5">
-          {sections.map((section) => (
-            <div key={section.id}>
-              <h3 className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-[#777]">
-                {section.label}
-              </h3>
-              <ul className="flex flex-col gap-1.5">
-                {section.items.map((item) => (
-                  <RecurringItem
-                    key={item.id}
-                    item={item}
-                    onToggle={handleToggle}
-                    onSkip={handleSkip}
-                    onEdit={handleEdit}
-                  />
-                ))}
-              </ul>
-            </div>
-          ))}
+          {sections.map((section) =>
+            section.complete ? (
+              <p
+                key={section.id}
+                className="rounded-[10px] border border-line bg-white/70 px-3 py-2.5 text-[13px] text-[#777]"
+              >
+                {section.label} items complete
+              </p>
+            ) : (
+              <div key={section.id}>
+                <h3 className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-[#777]">
+                  {section.label}
+                </h3>
+                <ul className="flex flex-col gap-1.5">
+                  {section.openItems.map((item) => (
+                    <RecurringItem
+                      key={item.id}
+                      item={item}
+                      onToggle={handleToggle}
+                      onSkip={handleSkip}
+                      onEdit={handleEdit}
+                    />
+                  ))}
+                </ul>
+              </div>
+            ),
+          )}
         </div>
       ) : (
         !adding &&
