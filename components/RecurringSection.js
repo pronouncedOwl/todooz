@@ -425,15 +425,6 @@ export default function RecurringSection({
               {remaining ? ` · ${remaining}` : ""}
             </span>
           )}
-          {!adding && !editingTemplateId && (
-            <button
-              type="button"
-              onClick={handleAdd}
-              className="rounded-full border border-ink bg-ink px-3.5 py-1.5 text-[13px] font-medium text-white"
-            >
-              Add
-            </button>
-          )}
         </div>
       </div>
 
@@ -507,6 +498,18 @@ export default function RecurringSection({
               : "No habits for today. Add one to get started."}
           </p>
         )
+      )}
+
+      {!adding && !editingTemplateId && (
+        <div className="mt-4 flex justify-end">
+          <button
+            type="button"
+            onClick={handleAdd}
+            className="rounded-full border border-ink bg-ink px-3.5 py-1.5 text-[13px] font-medium text-white"
+          >
+            Add Recurring
+          </button>
+        </div>
       )}
     </section>
   );

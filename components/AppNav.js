@@ -23,6 +23,12 @@ export default function AppNav({ userEmail = null, authEnabled = false }) {
           Toodooz
         </Link>
         <div className="flex items-center gap-2">
+          <Link
+            href="/?addTodo=1"
+            className="rounded-full border border-ink bg-ink px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-ink/90"
+          >
+            Add TODO
+          </Link>
           <nav className="flex items-center gap-1">
             {LINKS.map((link) => {
               const active =

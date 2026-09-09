@@ -698,6 +698,21 @@ export default function TodoApp({
     setDraft(EMPTY_DRAFT);
   }
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("addTodo") !== "1") return;
+
+    const timer = window.setTimeout(() => {
+      handleAdd();
+      params.delete("addTodo");
+      const next = `${window.location.pathname}${params.toString() ? `?${params}` : ""}${window.location.hash}`;
+      window.history.replaceState({}, "", next);
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, []);
+
   function handleToggle(id, completed) {
     startTransition(async () => {
       setOptimistic({ type: "toggle", id, completed });
