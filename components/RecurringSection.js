@@ -314,6 +314,7 @@ export default function RecurringSection({
     startTransition(async () => {
       setOptimistic({ type: "toggle", id, completed });
       await toggleRecurring(id, completed);
+      router.refresh();
     });
   }
 
@@ -321,6 +322,7 @@ export default function RecurringSection({
     startTransition(async () => {
       setOptimistic({ type: "skip", id });
       await skipRecurring(id);
+      router.refresh();
     });
   }
 
@@ -468,12 +470,14 @@ export default function RecurringSection({
         <div className="flex flex-col gap-5">
           {sections.map((section) =>
             section.complete ? (
-              <p
+              <div
                 key={section.id}
-                className="rounded-[10px] border border-line bg-white/70 px-3 py-2.5 text-[13px] text-[#777]"
+                className="rounded-[10px] border border-[#ddd] bg-[#f7f6f3] px-3 py-2.5"
               >
-                {section.label} items complete
-              </p>
+                <p className="text-[13px] font-medium text-[#555]">
+                  {section.label} — complete
+                </p>
+              </div>
             ) : (
               <div key={section.id}>
                 <h3 className="mb-2 text-[13px] font-semibold uppercase tracking-wide text-[#777]">
