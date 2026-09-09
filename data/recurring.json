@@ -8,7 +8,12 @@
       "times_per_day": 2,
       "byweekday": null,
       "anchor": null,
-      "notes": "Twice per day."
+      "notes": "Twice per day.",
+      "time_of_day": "morning",
+      "time_slots": [
+        "morning",
+        "daytime"
+      ]
     },
     {
       "id": "rec-journal",
@@ -18,7 +23,8 @@
       "times_per_day": 1,
       "byweekday": null,
       "anchor": null,
-      "notes": ""
+      "notes": "",
+      "time_of_day": "morning"
     },
     {
       "id": "rec-kids-mail",
@@ -30,7 +36,8 @@
         "TH"
       ],
       "anchor": null,
-      "notes": ""
+      "notes": "",
+      "time_of_day": "daytime"
     },
     {
       "id": "rec-alan-watts",
@@ -40,7 +47,8 @@
       "times_per_day": 1,
       "byweekday": null,
       "anchor": "2026-07-15",
-      "notes": ""
+      "notes": "",
+      "time_of_day": "daytime"
     },
     {
       "id": "rec-garage",
@@ -50,7 +58,8 @@
       "times_per_day": 1,
       "byweekday": null,
       "anchor": null,
-      "notes": ""
+      "notes": "",
+      "time_of_day": "daytime"
     },
     {
       "id": "rec-pt",
@@ -60,7 +69,8 @@
       "times_per_day": 1,
       "byweekday": null,
       "anchor": null,
-      "notes": ""
+      "notes": "",
+      "time_of_day": "morning"
     },
     {
       "id": "rec-toe-medicine",
@@ -70,7 +80,8 @@
       "times_per_day": 1,
       "byweekday": null,
       "anchor": null,
-      "notes": ""
+      "notes": "",
+      "time_of_day": "morning"
     },
     {
       "id": "rec-reach-friend",
@@ -80,7 +91,8 @@
       "times_per_day": 1,
       "byweekday": null,
       "anchor": "2026-06-30",
-      "notes": "Alternates with frisbee day."
+      "notes": "Alternates with frisbee day.",
+      "time_of_day": "daytime"
     },
     {
       "id": "rec-shower",
@@ -90,7 +102,8 @@
       "times_per_day": 1,
       "byweekday": null,
       "anchor": null,
-      "notes": "Sub-items intentionally not tracked."
+      "notes": "Sub-items intentionally not tracked.",
+      "time_of_day": "morning"
     },
     {
       "id": "rec-stretch",
@@ -100,7 +113,8 @@
       "times_per_day": 1,
       "byweekday": null,
       "anchor": null,
-      "notes": ""
+      "notes": "",
+      "time_of_day": "morning"
     },
     {
       "id": "rec-supplements",
@@ -110,7 +124,8 @@
       "times_per_day": 1,
       "byweekday": null,
       "anchor": null,
-      "notes": ""
+      "notes": "",
+      "time_of_day": "morning"
     },
     {
       "id": "rec-vyvanse",
@@ -120,7 +135,8 @@
       "times_per_day": 1,
       "byweekday": null,
       "anchor": null,
-      "notes": "Before noon (12pm)."
+      "notes": "Before noon (12pm).",
+      "time_of_day": "morning"
     },
     {
       "id": "rec-frisbee",
@@ -130,7 +146,8 @@
       "times_per_day": 1,
       "byweekday": null,
       "anchor": "2026-07-01",
-      "notes": "Alternates with reach-out-to-a-friend."
+      "notes": "Alternates with reach-out-to-a-friend.",
+      "time_of_day": "daytime"
     },
     {
       "id": "rec-trim-hair",
@@ -142,7 +159,8 @@
         "TH"
       ],
       "anchor": null,
-      "notes": ""
+      "notes": "",
+      "time_of_day": "daytime"
     },
     {
       "id": "rec-trim-nails",
@@ -154,7 +172,8 @@
         "TU"
       ],
       "anchor": null,
-      "notes": ""
+      "notes": "",
+      "time_of_day": "daytime"
     }
   ],
   "instances": [
@@ -254,5 +273,8 @@
       "completed": false,
       "status": "open"
     }
-  ]
+  ],
+  "prefs": {
+    "morning_closed_on": null
+  }
 }

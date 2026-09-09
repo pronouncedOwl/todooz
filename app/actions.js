@@ -15,7 +15,9 @@ import {
   createRecurringTemplate,
   deleteRecurringTemplate,
   promoteTodoToRecurring,
+  resolveMorningLeftovers,
   setRecurringCompleted,
+  setRecurringSkipped,
   updateRecurringTemplate,
 } from "@/lib/recurring";
 
@@ -84,6 +86,17 @@ export async function convertTodoToProject(todoId) {
 export async function toggleRecurring(id, completed) {
   await setRecurringCompleted(id, completed);
   revalidatePath("/");
+}
+
+export async function skipRecurring(id) {
+  await setRecurringSkipped(id);
+  revalidatePath("/");
+}
+
+export async function closeMorningBlock(resolution) {
+  const result = await resolveMorningLeftovers(resolution);
+  revalidatePath("/");
+  return result;
 }
 
 export async function addRecurring(fields) {

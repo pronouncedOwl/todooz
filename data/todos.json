@@ -6,7 +6,8 @@
     "due_date": "2026-07-03",
     "project": "Wife's car registration renewal",
     "completed": true,
-    "notes": ""
+    "notes": "",
+    "completed_at": "2026-07-01T12:00:00.000Z"
   },
   {
     "id": "task-002",
@@ -15,7 +16,8 @@
     "due_date": "2026-07-03",
     "project": null,
     "completed": true,
-    "notes": ""
+    "notes": "",
+    "completed_at": "2026-07-01T13:00:00.000Z"
   },
   {
     "id": "task-003",
@@ -24,7 +26,8 @@
     "due_date": "2026-07-16",
     "project": null,
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-004",
@@ -33,7 +36,8 @@
     "due_date": "2026-07-06",
     "project": "Back surgery prep (Dr. Yadiv)",
     "completed": true,
-    "notes": ""
+    "notes": "",
+    "completed_at": "2026-07-01T14:00:00.000Z"
   },
   {
     "id": "task-005",
@@ -42,7 +46,8 @@
     "due_date": "2026-07-16",
     "project": "Wife's car registration renewal",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-006",
@@ -51,7 +56,8 @@
     "due_date": "2026-07-16",
     "project": null,
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-007",
@@ -60,7 +66,8 @@
     "due_date": null,
     "project": "Back surgery prep (Dr. Yadiv)",
     "completed": true,
-    "notes": ""
+    "notes": "",
+    "completed_at": "2026-07-01T15:00:00.000Z"
   },
   {
     "id": "task-008",
@@ -69,7 +76,8 @@
     "due_date": null,
     "project": "Fix backyard swing set",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-047",
@@ -78,7 +86,8 @@
     "due_date": null,
     "project": "Fix backyard swing set",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-048",
@@ -87,7 +96,8 @@
     "due_date": null,
     "project": "Fix backyard swing set",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-009",
@@ -96,7 +106,8 @@
     "due_date": "2026-07-11",
     "project": null,
     "completed": true,
-    "notes": ""
+    "notes": "",
+    "completed_at": "2026-07-01T16:00:00.000Z"
   },
   {
     "id": "task-012",
@@ -105,7 +116,8 @@
     "due_date": "2026-08-01",
     "project": null,
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-013",
@@ -114,7 +126,8 @@
     "due_date": "2026-08-14",
     "project": null,
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-014",
@@ -123,7 +136,8 @@
     "due_date": "2026-08-28",
     "project": null,
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-015",
@@ -132,7 +146,8 @@
     "due_date": null,
     "project": null,
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-016",
@@ -141,7 +156,8 @@
     "due_date": null,
     "project": "Katie's business — hosting cleanup",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-017",
@@ -150,7 +166,8 @@
     "due_date": null,
     "project": "House-info dashboard",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-018",
@@ -159,7 +176,8 @@
     "due_date": null,
     "project": null,
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-019",
@@ -168,7 +186,8 @@
     "due_date": null,
     "project": null,
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-020",
@@ -177,7 +196,8 @@
     "due_date": null,
     "project": null,
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-021",
@@ -186,7 +206,8 @@
     "due_date": null,
     "project": "Katie's business — hosting cleanup",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-022",
@@ -195,7 +216,8 @@
     "due_date": null,
     "project": "Katie's business — hosting cleanup",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-023",
@@ -204,7 +226,8 @@
     "due_date": null,
     "project": "Credit-card spending dashboard",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-024",
@@ -213,7 +236,8 @@
     "due_date": null,
     "project": "House-info dashboard",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-025",
@@ -222,7 +246,8 @@
     "due_date": null,
     "project": "Katie's business — hosting cleanup",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-026",
@@ -231,7 +256,8 @@
     "due_date": null,
     "project": "Credit-card spending dashboard",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-027",
@@ -240,7 +266,8 @@
     "due_date": null,
     "project": "Credit-card spending dashboard",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-028",
@@ -249,7 +276,8 @@
     "due_date": "2026-07-11",
     "project": null,
     "completed": true,
-    "notes": ""
+    "notes": "",
+    "completed_at": "2026-07-01T17:00:00.000Z"
   },
   {
     "id": "task-029",
@@ -258,7 +286,8 @@
     "due_date": "2026-10-01",
     "project": null,
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-030",
@@ -267,7 +296,8 @@
     "due_date": null,
     "project": null,
     "completed": true,
-    "notes": ""
+    "notes": "",
+    "completed_at": "2026-07-01T18:00:00.000Z"
   },
   {
     "id": "task-031",
@@ -276,7 +306,8 @@
     "due_date": null,
     "project": null,
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-032",
@@ -285,7 +316,8 @@
     "due_date": null,
     "project": "3D-print truck liner/tray",
     "completed": true,
-    "notes": ""
+    "notes": "",
+    "completed_at": "2026-07-01T19:00:00.000Z"
   },
   {
     "id": "task-033",
@@ -294,7 +326,8 @@
     "due_date": null,
     "project": "Fishing gear prep",
     "completed": true,
-    "notes": ""
+    "notes": "",
+    "completed_at": "2026-07-01T20:00:00.000Z"
   },
   {
     "id": "task-034",
@@ -303,7 +336,8 @@
     "due_date": null,
     "project": "Fishing gear prep",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-035",
@@ -312,7 +346,8 @@
     "due_date": null,
     "project": "Print new truck photos",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-036",
@@ -321,7 +356,8 @@
     "due_date": null,
     "project": "3D-print truck liner/tray",
     "completed": true,
-    "notes": ""
+    "notes": "",
+    "completed_at": "2026-07-01T21:00:00.000Z"
   },
   {
     "id": "task-037",
@@ -330,7 +366,8 @@
     "due_date": null,
     "project": "Print new truck photos",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-038",
@@ -339,7 +376,8 @@
     "due_date": null,
     "project": "Print new truck photos",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-039",
@@ -348,7 +386,8 @@
     "due_date": null,
     "project": "Print new truck photos",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-040",
@@ -357,7 +396,8 @@
     "due_date": null,
     "project": "Print new truck photos",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-041",
@@ -366,7 +406,8 @@
     "due_date": null,
     "project": null,
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-042",
@@ -375,7 +416,8 @@
     "due_date": null,
     "project": "Print new truck photos",
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-043",
@@ -384,7 +426,8 @@
     "due_date": null,
     "project": null,
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   },
   {
     "id": "task-044",
@@ -393,7 +436,8 @@
     "due_date": null,
     "project": "Fishing gear prep",
     "completed": true,
-    "notes": ""
+    "notes": "",
+    "completed_at": "2026-07-01T22:00:00.000Z"
   },
   {
     "id": "task-045",
@@ -402,7 +446,8 @@
     "due_date": null,
     "project": "3D-print truck liner/tray",
     "completed": true,
-    "notes": ""
+    "notes": "",
+    "completed_at": "2026-07-01T23:00:00.000Z"
   },
   {
     "id": "task-046",
@@ -411,6 +456,7 @@
     "due_date": null,
     "project": null,
     "completed": false,
-    "notes": ""
+    "notes": "",
+    "completed_at": null
   }
 ]

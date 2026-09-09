@@ -12,6 +12,12 @@ const WEEKDAYS = [
   { code: "SA", label: "Sa" },
 ];
 
+export const TIME_OF_DAY_OPTIONS = [
+  { id: "morning", label: "Morning" },
+  { id: "daytime", label: "Daytime" },
+  { id: "evening", label: "Evening" },
+];
+
 export const EMPTY_RECURRING_DRAFT = {
   title: "",
   notes: "",
@@ -19,10 +25,37 @@ export const EMPTY_RECURRING_DRAFT = {
   byweekday: [],
   times_per_day: 1,
   estimate_minutes: null,
+  time_of_day: "daytime",
+  time_slots: ["daytime"],
 };
 
 function fieldClassName() {
   return "mt-1 w-full rounded-lg border border-line bg-white px-2.5 py-1.5 text-sm text-ink outline-none focus:border-ink/40";
+}
+
+function TimeOfDayChips({ value, onChange, label }) {
+  return (
+    <fieldset>
+      <legend className="text-[13px] font-medium text-muted">{label}</legend>
+      <div className="mt-1.5 flex flex-wrap gap-1.5">
+        {TIME_OF_DAY_OPTIONS.map((opt) => (
+          <button
+            key={opt.id}
+            type="button"
+            onClick={() => onChange(opt.id)}
+            className={[
+              "rounded-full border px-3 py-1 text-[13px] transition-colors",
+              value === opt.id
+                ? "border-ink bg-ink text-white"
+                : "border-line bg-white text-muted hover:border-ink/30",
+            ].join(" ")}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </fieldset>
+  );
 }
 
 /** Map UI draft → createRecurringTemplate / promote payload. */
@@ -31,39 +64,45 @@ export function draftToRecurringFields(draft) {
   const notes = typeof draft.notes === "string" ? draft.notes : "";
   const times = Math.max(1, Math.min(20, Number(draft.times_per_day) || 1));
   const schedule = draft.schedule || "daily";
+  const time_of_day = draft.time_of_day || "daytime";
+  const slots = Array.isArray(draft.time_slots) ? draft.time_slots : [];
+  const time_slots = Array.from({ length: times }, (_, i) => {
+    const slot = slots[i] ?? slots[slots.length - 1] ?? time_of_day;
+    return slot || time_of_day;
+  });
 
   const estimate_minutes = draft.estimate_minutes ?? null;
 
+  const base = {
+    title,
+    notes,
+    times_per_day: times,
+    estimate_minutes,
+    time_of_day,
+    time_slots,
+  };
+
   if (schedule === "weekly") {
     return {
-      title,
-      notes,
+      ...base,
       freq: "WEEKLY",
       interval: 1,
-      times_per_day: times,
       byweekday: Array.isArray(draft.byweekday) ? draft.byweekday : [],
-      estimate_minutes,
     };
   }
 
   if (schedule === "every2") {
     return {
-      title,
-      notes,
+      ...base,
       freq: "DAILY",
       interval: 2,
-      times_per_day: times,
-      estimate_minutes,
     };
   }
 
   return {
-    title,
-    notes,
+    ...base,
     freq: "DAILY",
     interval: 1,
-    times_per_day: times,
-    estimate_minutes,
   };
 }
 
@@ -85,9 +124,46 @@ export default function RecurringForm({
     onChange({ ...draft, byweekday: next });
   }
 
+  function setTimesPerDay(raw) {
+    const times = Math.max(1, Math.min(20, Number(raw) || 1));
+    const prev = Array.isArray(draft.time_slots) ? draft.time_slots : [];
+    const fallback = draft.time_of_day || "daytime";
+    const time_slots = Array.from(
+      { length: times },
+      (_, i) => prev[i] ?? prev[prev.length - 1] ?? fallback,
+    );
+    onChange({ ...draft, times_per_day: times, time_slots });
+  }
+
+  function setSingleTimeOfDay(time_of_day) {
+    const times = Math.max(1, Number(draft.times_per_day) || 1);
+    onChange({
+      ...draft,
+      time_of_day,
+      time_slots: Array.from({ length: times }, () => time_of_day),
+    });
+  }
+
+  function setSlot(index, slot) {
+    const times = Math.max(1, Number(draft.times_per_day) || 1);
+    const prev = Array.isArray(draft.time_slots) ? [...draft.time_slots] : [];
+    while (prev.length < times) {
+      prev.push(draft.time_of_day || "daytime");
+    }
+    prev[index] = slot;
+    onChange({
+      ...draft,
+      time_slots: prev,
+      // Keep template default aligned with first slot for single-slot habits.
+      time_of_day: index === 0 ? slot : draft.time_of_day || slot,
+    });
+  }
+
   const weeklyNeedsDay =
     draft.schedule === "weekly" &&
     (!Array.isArray(draft.byweekday) || draft.byweekday.length === 0);
+
+  const times = Math.max(1, Number(draft.times_per_day) || 1);
 
   return (
     <form
@@ -183,15 +259,36 @@ export default function RecurringForm({
           min={1}
           max={20}
           value={draft.times_per_day}
-          onChange={(e) =>
-            onChange({
-              ...draft,
-              times_per_day: Math.max(1, Number(e.target.value) || 1),
-            })
-          }
+          onChange={(e) => setTimesPerDay(e.target.value)}
           className={`${fieldClassName()} max-w-[6rem]`}
         />
       </label>
+
+      {times <= 1 ? (
+        <TimeOfDayChips
+          label="Time of day"
+          value={draft.time_of_day || "daytime"}
+          onChange={setSingleTimeOfDay}
+        />
+      ) : (
+        <div className="flex flex-col gap-3">
+          {Array.from({ length: times }, (_, i) => {
+            const slots = Array.isArray(draft.time_slots)
+              ? draft.time_slots
+              : [];
+            const value =
+              slots[i] ?? slots[slots.length - 1] ?? draft.time_of_day ?? "daytime";
+            return (
+              <TimeOfDayChips
+                key={i}
+                label={`Occurrence ${i + 1} time of day`}
+                value={value}
+                onChange={(slot) => setSlot(i, slot)}
+              />
+            );
+          })}
+        </div>
+      )}
 
       <EstimateChips
         value={draft.estimate_minutes}

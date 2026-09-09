@@ -560,6 +560,7 @@ export default function TodoApp({
   initialTodos,
   initialRecurring = [],
   initialProjects = [],
+  morningClosedOn = null,
 }) {
   const router = useRouter();
   const [filter, setFilter] = useState("all");
@@ -576,7 +577,15 @@ export default function TodoApp({
     (state, action) => {
       if (action.type === "toggle") {
         return state.map((t) =>
-          t.id === action.id ? { ...t, completed: action.completed } : t,
+          t.id === action.id
+            ? {
+                ...t,
+                completed: action.completed,
+                completed_at: action.completed
+                  ? new Date().toISOString()
+                  : null,
+              }
+            : t,
         );
       }
       if (action.type === "update") {
@@ -626,13 +635,12 @@ export default function TodoApp({
       : filtered
           .filter((t) => t.completed)
           .sort((a, b) => {
-            if (a.due_date && b.due_date && a.due_date !== b.due_date) {
-              return a.due_date < b.due_date ? -1 : 1;
-            }
-            if (a.due_date && !b.due_date) return -1;
-            if (!a.due_date && b.due_date) return 1;
-            return PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority];
-          });
+            const aAt = a.completed_at || "";
+            const bAt = b.completed_at || "";
+            if (aAt !== bAt) return aAt < bAt ? 1 : -1;
+            return String(a.title || "").localeCompare(String(b.title || ""));
+          })
+          .slice(0, 10);
 
     const due = active
       .filter((t) => t.due_date)
@@ -783,7 +791,10 @@ export default function TodoApp({
 
   return (
     <div className="mx-auto w-full max-w-xl px-4 py-6 sm:px-6 sm:py-8">
-      <RecurringSection initialItems={initialRecurring} />
+      <RecurringSection
+        initialItems={initialRecurring}
+        morningClosedOn={morningClosedOn}
+      />
 
       <header className="mb-4 flex items-start justify-between gap-3">
         <div>
