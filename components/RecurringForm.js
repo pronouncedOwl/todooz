@@ -17,6 +17,7 @@ export const TIME_OF_DAY_OPTIONS = [
   { id: "morning", label: "Morning" },
   { id: "daytime", label: "Daytime" },
   { id: "evening", label: "Evening" },
+  { id: "before_bed", label: "Before bed" },
 ];
 
 export const EMPTY_RECURRING_DRAFT = {

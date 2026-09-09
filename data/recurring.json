@@ -218,6 +218,39 @@
       "anchor": null,
       "notes": "",
       "time_of_day": "daytime"
+    },
+    {
+      "id": "rec-foot-nail-medicine",
+      "title": "Foot and Nail medicine",
+      "freq": "DAILY",
+      "interval": 1,
+      "times_per_day": 1,
+      "byweekday": null,
+      "anchor": null,
+      "notes": "",
+      "time_of_day": "before_bed"
+    },
+    {
+      "id": "rec-pimple-patch",
+      "title": "Pimple Patch",
+      "freq": "DAILY",
+      "interval": 1,
+      "times_per_day": 1,
+      "byweekday": null,
+      "anchor": null,
+      "notes": "",
+      "time_of_day": "before_bed"
+    },
+    {
+      "id": "rec-do-whitening",
+      "title": "Do whitening",
+      "freq": "DAILY",
+      "interval": 1,
+      "times_per_day": 1,
+      "byweekday": null,
+      "anchor": null,
+      "notes": "",
+      "time_of_day": "daytime"
     }
   ],
   "instances": [

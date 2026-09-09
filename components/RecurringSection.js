@@ -24,6 +24,7 @@ const TIME_SECTIONS = [
   { id: "morning", label: "Morning" },
   { id: "daytime", label: "Daytime" },
   { id: "evening", label: "Evening" },
+  { id: "before_bed", label: "Before bed" },
 ];
 
 function localWeekdayCode(now = new Date()) {
