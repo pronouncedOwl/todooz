@@ -4,7 +4,7 @@ import { useEffect, useMemo, useOptimistic, useState, useTransition } from "reac
 import { useRouter } from "next/navigation";
 import {
   addRecurring,
-  closeMorningBlock,
+  closeHabitBlock,
   saveRecurring,
   skipRecurring,
   stopRecurring,
@@ -14,7 +14,11 @@ import RecurringForm, {
   EMPTY_RECURRING_DRAFT,
   draftToRecurringFields,
 } from "@/components/RecurringForm";
-import { isPastMorningCutoff } from "@/lib/dates";
+import {
+  formatHabitBlockCutoff,
+  HABIT_CLOSEOUT_BLOCKS,
+  isPastHabitBlockCutoff,
+} from "@/lib/dates";
 import { formatEstimate, formatRemainingEstimate } from "@/lib/estimates";
 
 const WEEKDAY_BY_INDEX = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
@@ -120,46 +124,115 @@ function RecurringItem({ item, onToggle, onSkip, onEdit }) {
   );
 }
 
-function MorningCloseoutDialog({ items, resolving, onResolve }) {
+const CLOSEOUT_ACTIONS = [
+  { id: "complete", label: "Check" },
+  { id: "skip", label: "Skip" },
+  { id: "leave_open", label: "Leave open" },
+];
+
+function HabitCloseoutDialog({
+  block,
+  items,
+  choices,
+  resolving,
+  onChoice,
+  onBulk,
+  onConfirm,
+}) {
+  const cutoffLabel = formatHabitBlockCutoff(block.id);
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="morning-closeout-title"
+      aria-labelledby="habit-closeout-title"
     >
       <div className="w-full max-w-md rounded-2xl border border-line bg-white p-5 shadow-xl">
         <h3
-          id="morning-closeout-title"
+          id="habit-closeout-title"
           className="text-lg font-semibold text-ink"
         >
-          Morning block is over
+          {block.label} is over
         </h3>
         <p className="mt-2 text-sm text-[#555]">
-          These morning habits are still open. Mark them complete or mark them
-          missed — then the morning section hides until tomorrow.
+          {cutoffLabel ? `${block.label} ended at ${cutoffLabel}. ` : ""}
+          What’s the deal with the ones still open? Check what you did, skip
+          what you’re not doing, or leave some open to finish later.
         </p>
-        <ul className="mt-3 max-h-48 list-disc space-y-1 overflow-y-auto pl-5 text-sm text-ink">
-          {items.map((item) => (
-            <li key={item.id}>{item.title}</li>
-          ))}
+        <ul className="mt-3 max-h-64 space-y-2 overflow-y-auto">
+          {items.map((item) => {
+            const selected = choices[item.id] || "leave_open";
+            return (
+              <li
+                key={item.id}
+                className="rounded-[10px] border border-[#eee] bg-[#faf9f7] px-3 py-2.5"
+              >
+                <div className="text-sm font-medium text-ink">{item.title}</div>
+                <div
+                  className="mt-2 flex flex-wrap gap-1.5"
+                  role="radiogroup"
+                  aria-label={`Close out ${item.title}`}
+                >
+                  {CLOSEOUT_ACTIONS.map((action) => {
+                    const active = selected === action.id;
+                    return (
+                      <button
+                        key={action.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        disabled={resolving}
+                        onClick={() => onChoice(item.id, action.id)}
+                        className={[
+                          "rounded-full px-3 py-1 text-[12px] font-medium disabled:opacity-40",
+                          active
+                            ? "bg-ink text-white"
+                            : "border border-line bg-white text-[#666] hover:border-ink/30 hover:text-ink",
+                        ].join(" ")}
+                      >
+                        {action.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </li>
+            );
+          })}
         </ul>
-        <div className="mt-5 flex flex-wrap gap-2">
+        <div className="mt-3 flex flex-wrap gap-2 text-[12px]">
           <button
             type="button"
             disabled={resolving}
-            onClick={() => onResolve("complete")}
-            className="rounded-full bg-ink px-4 py-1.5 text-[13px] font-medium text-white disabled:opacity-40"
+            onClick={() => onBulk("complete")}
+            className="text-[#777] underline-offset-2 hover:text-ink hover:underline disabled:opacity-40"
           >
-            {resolving ? "Saving…" : "Mark complete"}
+            Check all
           </button>
           <button
             type="button"
             disabled={resolving}
-            onClick={() => onResolve("missed")}
-            className="rounded-full border border-line bg-white px-4 py-1.5 text-[13px] font-medium text-muted hover:border-ink/30 hover:text-ink disabled:opacity-40"
+            onClick={() => onBulk("skip")}
+            className="text-[#777] underline-offset-2 hover:text-ink hover:underline disabled:opacity-40"
           >
-            Mark missed
+            Skip all
+          </button>
+          <button
+            type="button"
+            disabled={resolving}
+            onClick={() => onBulk("leave_open")}
+            className="text-[#777] underline-offset-2 hover:text-ink hover:underline disabled:opacity-40"
+          >
+            Leave all open
+          </button>
+        </div>
+        <div className="mt-5 flex justify-end">
+          <button
+            type="button"
+            disabled={resolving}
+            onClick={onConfirm}
+            className="rounded-full bg-ink px-4 py-1.5 text-[13px] font-medium text-white disabled:opacity-40"
+          >
+            {resolving ? "Saving…" : "Continue"}
           </button>
         </div>
       </div>
@@ -169,7 +242,7 @@ function MorningCloseoutDialog({ items, resolving, onResolve }) {
 
 export default function RecurringSection({
   initialItems,
-  morningClosedOn = null,
+  habitCloseouts = {},
 }) {
   const router = useRouter();
   const [adding, setAdding] = useState(false);
@@ -177,9 +250,11 @@ export default function RecurringSection({
   const [draft, setDraft] = useState(EMPTY_RECURRING_DRAFT);
   const [saving, setSaving] = useState(false);
   const [stoppingId, setStoppingId] = useState(null);
-  const [closedOverride, setClosedOverride] = useState(null);
-  const [pastCutoff, setPastCutoff] = useState(false);
-  const [resolvingMorning, setResolvingMorning] = useState(false);
+  const [closedOverride, setClosedOverride] = useState({});
+  const [clockReady, setClockReady] = useState(false);
+  const [now, setNow] = useState(() => new Date());
+  const [resolvingCloseout, setResolvingCloseout] = useState(false);
+  const [closeoutChoices, setCloseoutChoices] = useState({});
   const [items, setOptimistic] = useOptimistic(
     initialItems,
     (state, action) => {
@@ -228,15 +303,20 @@ export default function RecurringSection({
           };
         });
       }
-      if (action.type === "resolveMorning") {
+      if (action.type === "resolveBlock") {
+        const byId = new Map(
+          (action.resolutions || []).map((row) => [row.id, row.action]),
+        );
         return state.map((item) => {
-          if (item.time_of_day !== "morning" || !isVisibleOpen(item)) {
-            return item;
-          }
-          if (action.resolution === "complete") {
+          const resolution = byId.get(item.id);
+          if (!resolution) return item;
+          if (resolution === "complete") {
             return { ...item, completed: true, status: "open" };
           }
-          return { ...item, completed: false, status: "incomplete" };
+          if (resolution === "skip") {
+            return { ...item, completed: false, status: "skipped" };
+          }
+          return item;
         });
       }
       return state;
@@ -244,29 +324,44 @@ export default function RecurringSection({
   );
   const [, startTransition] = useTransition();
 
-  const closedOn = closedOverride ?? morningClosedOn;
+  const closeouts = useMemo(
+    () => ({ ...habitCloseouts, ...closedOverride }),
+    [habitCloseouts, closedOverride],
+  );
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setPastCutoff(isPastMorningCutoff());
-    }, 0);
-    return () => clearTimeout(timer);
+    function tick() {
+      setNow(new Date());
+      setClockReady(true);
+    }
+    tick();
+    const timer = setInterval(tick, 15000);
+    function onVisible() {
+      if (document.visibilityState === "visible") tick();
+    }
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   const openItems = items.filter(isVisibleOpen);
   const doneCount = items.filter((i) => i.completed).length;
   const remaining = formatRemainingEstimate(openItems);
-
-  const morningOpen = openItems.filter((i) => i.time_of_day === "morning");
   const todayDate = items[0]?.date;
-  const morningClosedToday = Boolean(
-    closedOn && todayDate && closedOn === todayDate,
-  );
 
-  const showMorningDialog =
-    pastCutoff &&
-    !morningClosedToday &&
-    (morningOpen.length > 0 || resolvingMorning);
+  let pendingCloseout = null;
+  if (clockReady) {
+    for (const block of HABIT_CLOSEOUT_BLOCKS) {
+      if (!isPastHabitBlockCutoff(block.id, now)) continue;
+      if (todayDate && closeouts[block.id] === todayDate) continue;
+      const leftover = openItems.filter((item) => item.time_of_day === block.id);
+      if (leftover.length === 0 && !resolvingCloseout) continue;
+      pendingCloseout = { block, items: leftover };
+      break;
+    }
+  }
 
   const sections = useMemo(() => {
     return TIME_SECTIONS.map((section) => {
@@ -327,18 +422,49 @@ export default function RecurringSection({
     });
   }
 
-  function handleMorningResolve(resolution) {
-    setResolvingMorning(true);
+  function handleCloseoutChoice(id, action) {
+    setCloseoutChoices((prev) => ({ ...prev, [id]: action }));
+  }
+
+  function handleCloseoutBulk(action) {
+    if (!pendingCloseout) return;
+    setCloseoutChoices(
+      Object.fromEntries(
+        pendingCloseout.items.map((item) => [item.id, action]),
+      ),
+    );
+  }
+
+  function handleCloseoutConfirm() {
+    if (!pendingCloseout) return;
+    const blockId = pendingCloseout.block.id;
+    const resolutions = pendingCloseout.items.map((item) => ({
+      id: item.id,
+      action: closeoutChoices[item.id] || "leave_open",
+    }));
+    setResolvingCloseout(true);
+    setClosedOverride((prev) => ({
+      ...prev,
+      [blockId]: todayDate || prev[blockId],
+    }));
     startTransition(async () => {
       try {
-        setOptimistic({ type: "resolveMorning", resolution });
-        const result = await closeMorningBlock(resolution);
-        setClosedOverride(result.morning_closed_on);
+        setOptimistic({ type: "resolveBlock", resolutions });
+        const result = await closeHabitBlock(blockId, resolutions);
+        setClosedOverride((prev) => ({
+          ...prev,
+          ...result.block_closeouts,
+        }));
         router.refresh();
       } catch (err) {
-        window.alert(err?.message || "Could not close morning block");
+        setClosedOverride((prev) => {
+          const next = { ...prev };
+          delete next[blockId];
+          return next;
+        });
+        window.alert(err?.message || "Could not close habit block");
       } finally {
-        setResolvingMorning(false);
+        setResolvingCloseout(false);
       }
     });
   }
@@ -403,11 +529,15 @@ export default function RecurringSection({
 
   return (
     <section className="mb-8">
-      {showMorningDialog && (
-        <MorningCloseoutDialog
-          items={morningOpen}
-          resolving={resolvingMorning}
-          onResolve={handleMorningResolve}
+      {pendingCloseout && (pendingCloseout.items.length > 0 || resolvingCloseout) && (
+        <HabitCloseoutDialog
+          block={pendingCloseout.block}
+          items={pendingCloseout.items}
+          choices={closeoutChoices}
+          resolving={resolvingCloseout}
+          onChoice={handleCloseoutChoice}
+          onBulk={handleCloseoutBulk}
+          onConfirm={handleCloseoutConfirm}
         />
       )}
 
@@ -415,7 +545,8 @@ export default function RecurringSection({
         <div>
           <h2 className="text-xl font-semibold text-ink">Recurring / Self care</h2>
           <p className="mt-1 text-[13px] text-[#777]">
-            Daily and weekly habits by morning, daytime, and evening.
+            Daily and weekly habits by time of day. Leftovers can stay open
+            after a block ends until the day rolls over.
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">

@@ -16,7 +16,7 @@ export default async function Home() {
       initialTodos={todos}
       initialRecurring={recurring}
       initialProjects={projects}
-      morningClosedOn={habitPrefs.morning_closed_on}
+      habitCloseouts={habitPrefs.block_closeouts}
     />
   );
 }

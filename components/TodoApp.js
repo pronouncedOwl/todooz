@@ -560,7 +560,7 @@ export default function TodoApp({
   initialTodos,
   initialRecurring = [],
   initialProjects = [],
-  morningClosedOn = null,
+  habitCloseouts = {},
 }) {
   const router = useRouter();
   const [filter, setFilter] = useState("all");
@@ -808,7 +808,7 @@ export default function TodoApp({
     <div className="mx-auto w-full max-w-xl px-4 py-6 sm:px-6 sm:py-8">
       <RecurringSection
         initialItems={initialRecurring}
-        morningClosedOn={morningClosedOn}
+        habitCloseouts={habitCloseouts}
       />
 
       <header className="mb-4 flex items-start justify-between gap-3">

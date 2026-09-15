@@ -15,7 +15,7 @@ import {
   createRecurringTemplate,
   deleteRecurringTemplate,
   promoteTodoToRecurring,
-  resolveMorningLeftovers,
+  resolveHabitBlockLeftovers,
   setRecurringCompleted,
   setRecurringSkipped,
   updateRecurringTemplate,
@@ -93,8 +93,8 @@ export async function skipRecurring(id) {
   revalidatePath("/");
 }
 
-export async function closeMorningBlock(resolution) {
-  const result = await resolveMorningLeftovers(resolution);
+export async function closeHabitBlock(blockId, resolutions) {
+  const result = await resolveHabitBlockLeftovers(blockId, resolutions);
   revalidatePath("/");
   return result;
 }
