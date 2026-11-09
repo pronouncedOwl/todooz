@@ -20,6 +20,7 @@ import {
   isPastHabitBlockCutoff,
 } from "@/lib/dates";
 import { formatEstimate, formatRemainingEstimate } from "@/lib/estimates";
+import { applyHabitPatches, isOpenHabit } from "@/lib/habit-overrides";
 
 const WEEKDAY_BY_INDEX = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
 
@@ -62,8 +63,9 @@ function itemToRecurringDraft(item) {
   };
 }
 
-function isVisibleOpen(item) {
-  return !item.completed && item.status === "open";
+function isNextNavigationError(err) {
+  const digest = typeof err?.digest === "string" ? err.digest : "";
+  return digest.startsWith("NEXT_REDIRECT") || digest.startsWith("NEXT_NOT_FOUND");
 }
 
 function RecurringItem({ item, onToggle, onSkip, onEdit }) {
@@ -255,23 +257,14 @@ export default function RecurringSection({
   const [now, setNow] = useState(() => new Date());
   const [resolvingCloseout, setResolvingCloseout] = useState(false);
   const [closeoutChoices, setCloseoutChoices] = useState({});
+  const [patches, setPatches] = useState({});
+  const patchedItems = useMemo(
+    () => applyHabitPatches(initialItems, patches),
+    [initialItems, patches],
+  );
   const [items, setOptimistic] = useOptimistic(
-    initialItems,
+    patchedItems,
     (state, action) => {
-      if (action.type === "toggle") {
-        return state.map((item) =>
-          item.id === action.id
-            ? { ...item, completed: action.completed, status: "open" }
-            : item,
-        );
-      }
-      if (action.type === "skip") {
-        return state.map((item) =>
-          item.id === action.id
-            ? { ...item, completed: false, status: "skipped" }
-            : item,
-        );
-      }
       if (action.type === "removeTemplate") {
         return state.filter((item) => item.template_id !== action.templateId);
       }
@@ -303,22 +296,6 @@ export default function RecurringSection({
           };
         });
       }
-      if (action.type === "resolveBlock") {
-        const byId = new Map(
-          (action.resolutions || []).map((row) => [row.id, row.action]),
-        );
-        return state.map((item) => {
-          const resolution = byId.get(item.id);
-          if (!resolution) return item;
-          if (resolution === "complete") {
-            return { ...item, completed: true, status: "open" };
-          }
-          if (resolution === "skip") {
-            return { ...item, completed: false, status: "skipped" };
-          }
-          return item;
-        });
-      }
       return state;
     },
   );
@@ -346,7 +323,7 @@ export default function RecurringSection({
     };
   }, []);
 
-  const openItems = items.filter(isVisibleOpen);
+  const openItems = items.filter(isOpenHabit);
   const doneCount = items.filter((i) => i.completed).length;
   const remaining = formatRemainingEstimate(openItems);
   const todayDate = items[0]?.date;
@@ -369,7 +346,7 @@ export default function RecurringSection({
         (i) => (i.time_of_day || "daytime") === section.id,
       );
       const openForSection = allForSection
-        .filter(isVisibleOpen)
+        .filter(isOpenHabit)
         .sort((a, b) => {
           if (b.miss_streak !== a.miss_streak) return b.miss_streak - a.miss_streak;
           if (a.title !== b.title) return a.title.localeCompare(b.title);
@@ -406,20 +383,49 @@ export default function RecurringSection({
     setDraft(itemToRecurringDraft(item));
   }
 
-  function handleToggle(id, completed) {
-    startTransition(async () => {
-      setOptimistic({ type: "toggle", id, completed });
-      await toggleRecurring(id, completed);
-      router.refresh();
+  function dropPatchIfCurrent(id, patch) {
+    setPatches((current) => {
+      if (current[id] !== patch) return current;
+      const next = { ...current };
+      delete next[id];
+      return next;
     });
   }
 
-  function handleSkip(id) {
+  function rememberPatches(nextPatches) {
+    setPatches((current) => ({ ...current, ...nextPatches }));
+  }
+
+  function runHabitMutation(id, patch, action, failureMessage) {
+    rememberPatches({ [id]: patch });
     startTransition(async () => {
-      setOptimistic({ type: "skip", id });
-      await skipRecurring(id);
-      router.refresh();
+      try {
+        await action();
+        router.refresh();
+      } catch (err) {
+        if (isNextNavigationError(err)) throw err;
+        dropPatchIfCurrent(id, patch);
+        window.alert(err?.message || failureMessage);
+      }
     });
+  }
+
+  function handleToggle(id, completed) {
+    runHabitMutation(
+      id,
+      { completed: Boolean(completed), status: "open" },
+      () => toggleRecurring(id, completed),
+      "Could not update habit",
+    );
+  }
+
+  function handleSkip(id) {
+    runHabitMutation(
+      id,
+      { completed: false, status: "skipped" },
+      () => skipRecurring(id),
+      "Could not skip habit",
+    );
   }
 
   function handleCloseoutChoice(id, action) {
@@ -442,6 +448,15 @@ export default function RecurringSection({
       id: item.id,
       action: closeoutChoices[item.id] || "leave_open",
     }));
+    const resolutionPatches = {};
+    for (const row of resolutions) {
+      if (row.action === "complete") {
+        resolutionPatches[row.id] = { completed: true, status: "open" };
+      } else if (row.action === "skip") {
+        resolutionPatches[row.id] = { completed: false, status: "skipped" };
+      }
+    }
+    rememberPatches(resolutionPatches);
     setResolvingCloseout(true);
     setClosedOverride((prev) => ({
       ...prev,
@@ -449,7 +464,6 @@ export default function RecurringSection({
     }));
     startTransition(async () => {
       try {
-        setOptimistic({ type: "resolveBlock", resolutions });
         const result = await closeHabitBlock(blockId, resolutions);
         setClosedOverride((prev) => ({
           ...prev,
@@ -457,6 +471,18 @@ export default function RecurringSection({
         }));
         router.refresh();
       } catch (err) {
+        if (isNextNavigationError(err)) throw err;
+        setPatches((current) => {
+          let changed = false;
+          const next = { ...current };
+          for (const [id, patch] of Object.entries(resolutionPatches)) {
+            if (next[id] === patch) {
+              delete next[id];
+              changed = true;
+            }
+          }
+          return changed ? next : current;
+        });
         setClosedOverride((prev) => {
           const next = { ...prev };
           delete next[blockId];
